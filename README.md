@@ -1,5 +1,3 @@
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O514FGIG)
-
 # DSub2000-more
 
 Connect to your Subsonic server and listen to your music wherever you go. Songs
@@ -10,22 +8,25 @@ DSub2000-more is a community fork of [DSub2000](https://github.com/paroj/DSub200
 It retains the upstream settings back-navigation behavior and adds:
 
 * A configurable Now Playing controls auto-hide delay, including an option to disable it
-* Wrapping for long track titles and text on generated cover art
+* Wrapping for long Now Playing track titles and text on generated placeholder cover art
 * Coalescing of pending remote playback-state updates so the latest state is sent
 
 Subsonic is a cross-platform FOSS media server that's capable of indexing very
 large media collections. The server can transcode if necessary so that the app
 can play files that your device may not normally support.
 
-DSub2000-more is not currently published on F-Droid. The badge links to the
-upstream DSub2000 app; it does not install this fork or include the changes
-listed above.
+DSub2000-more is not currently published on F-Droid.
 
-[<img src="https://f-droid.org/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/github.paroj.dsub2000)
+## Installation
+
+This fork uses the application ID `github.trigsoft.dsub2000more`, so it can be
+installed alongside the original DSub2000 without replacing it. Settings and
+server accounts are separate; configure your server again after installation.
 
 ## Screenshots
+
+These screenshots are inherited from upstream DSub2000 and do not show all
+changes in this fork.
 
 | Albums | Sidebar | Current Song |
 | ------ | ------- | ------------ |
@@ -49,10 +50,17 @@ listed above.
 
 This is why we need the permissions we do:
 
-* Foreground Service - For downloading your playlists to cache
-* Read & Write External Storage - Store the music cache on a sdcard
-* Access Fine Location - Automatic day/ night mode and different server URL in local WiFi
-* Read Phone State - Auto-pause playback when a call is received
+* Foreground Service - Keep playback and playlist downloads running in the background
+* Notifications - Show playback controls and download status
+* Read Media Audio - Read audio files from shared storage on Android 13 and later
+* Read & Write External Storage - Access shared storage on Android 9 and earlier
+* Location - Identify the current WiFi network for local server URL selection
+
+## License and Credits
+
+See [LICENSE.txt](LICENSE.txt) for the GNU General Public License, version 3.
+This fork builds on [DSub2000](https://github.com/paroj/DSub2000) and the original
+DSub project. Credit for the upstream app belongs to its authors and contributors.
 
 ## Updating Icons
 Media Icons are double standard size.  On https://romannurik.github.io/AndroidAssetStudio/icons-actionbar.html you can manually change this via the following js commands:
