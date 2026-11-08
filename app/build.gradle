@@ -4,7 +4,7 @@ android {
 	compileSdkVersion 36
 
 	defaultConfig {
-		applicationId "github.paroj.dsub2000"
+		applicationId "github.trigsoft.dsub2000more"
 		minSdkVersion 24
 		targetSdkVersion 36
 		versionCode 221
