@@ -1,14 +1,24 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O514FGIG)
 
-# DSub2000
+# DSub2000-more
 
 Connect to your Subsonic server and listen to your music wherever you go. Songs
 are cached for playback to save on your mobile bandwidth and to make them
 available when you have no connection at all.
 
+DSub2000-more is a community fork of [DSub2000](https://github.com/paroj/DSub2000).
+It keeps the upstream app and adds:
+
+* A configurable Now Playing controls auto-hide delay, including an option to disable it
+* Wrapping for long track titles and text on generated cover art
+* Coalescing of pending remote playback-state updates so the latest state is sent
+
 Subsonic is a cross-platform FOSS media server that's capable of indexing very
 large media collections. The server can transcode if necessary so that the app
 can play files that your device may not normally support.
+
+The F-Droid badge links to the upstream DSub2000 app; this fork does not have a
+separate F-Droid release.
 
 [<img src="https://f-droid.org/badge/get-it-on.png"
     alt="Get it on F-Droid"
