@@ -30,6 +30,10 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.collection.LruCache;
@@ -175,21 +179,43 @@ public class ImageLoader {
 		canvas.drawRect(0, size * 2.0f / 3.0f, size, size, color);
 
 		if(topText != null || bottomText != null) {
-			Paint font = new Paint();
+			TextPaint font = new TextPaint();
 			font.setFlags(Paint.ANTI_ALIAS_FLAG);
 			font.setColor(Color.WHITE);
 			font.setTextSize(3.0f + size * 0.07f);
 
 			if(topText != null) {
-				canvas.drawText(topText, size * 0.05f, size * 0.6f, font);
+				drawWrappedText(canvas, font, topText, size * 0.05f, size * 0.55f, size);
 			}
 
 			if(bottomText != null) {
-				canvas.drawText(bottomText, size * 0.05f, size * 0.8f, font);
+				drawWrappedText(canvas, font, bottomText, size * 0.05f, size * 0.75f, size);
 			}
 		}
 
 		return bitmap;
+	}
+
+	private void drawWrappedText(Canvas canvas, TextPaint paint, String text, float x, float y, int size) {
+		if (TextUtils.isEmpty(text)) {
+			return;
+		}
+		// Bound each label to two lines so long album and artist names cannot overlap.
+		Paint.FontMetrics metrics = paint.getFontMetrics();
+		int maxLines = Math.max(1, Math.min(2,
+				(int) (size * 0.2f / Math.ceil(metrics.descent - metrics.ascent))));
+		StaticLayout layout = StaticLayout.Builder.obtain(text, 0, text.length(), paint,
+				Math.max(1, (int) (size * 0.9f)))
+				.setAlignment(Layout.Alignment.ALIGN_NORMAL)
+				.setIncludePad(false)
+				.setMaxLines(maxLines)
+				.setEllipsize(TextUtils.TruncateAt.END)
+				.build();
+		canvas.save();
+		canvas.translate(x, y);
+		canvas.clipRect(0, 0, size * 0.9f, size * 0.2f);
+		layout.draw(canvas);
+		canvas.restore();
 	}
 
 	public Bitmap getCachedImage(Context context, MusicDirectory.Entry entry, boolean large) {

@@ -15,4 +15,7 @@ can play files that your device may not normally support.
 <li>Gapless Playback</li>
 <li>Highly customizable UI</li>
 <li>User defined Cache Size, Network Timeout, and Buffer Length</li>
+<li>Configurable playback controls auto-hide delay in Settings &gt; Playback: Disabled, 3 seconds (default), 5, 10, 15, or 30 seconds</li>
+<li>Wrapping Now Playing song titles and album/artist labels on placeholder artwork</li>
+<li>Coalesced playback-state updates use the latest state and queue, including rapid changes</li>
 </ul>

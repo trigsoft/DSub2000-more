@@ -910,9 +910,23 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 	private void scheduleHideControls() {
 		if (hideControlsFuture != null) {
 			hideControlsFuture.cancel(false);
+			hideControlsFuture = null;
 		}
 		if (executorService == null || executorService.isShutdown()) {
 			return;
+		}
+
+		int delaySeconds = 3;
+		try {
+			delaySeconds = Integer.parseInt(Util.getPreferences(context).getString(
+					Constants.PREFERENCES_KEY_CONTROLS_AUTO_HIDE_DELAY, "3"));
+		} catch (NumberFormatException ignored) {
+		}
+		if (delaySeconds == 0) {
+			return;
+		}
+		if (delaySeconds < 0) {
+			delaySeconds = 3;
 		}
 
 		final Handler handler = new Handler();
@@ -927,7 +941,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 				});
 			}
 		};
-		hideControlsFuture = executorService.schedule(runnable, 3000L, TimeUnit.MILLISECONDS);
+		hideControlsFuture = executorService.schedule(runnable, delaySeconds, TimeUnit.SECONDS);
 	}
 
 	private void setControlsVisible(boolean visible) {

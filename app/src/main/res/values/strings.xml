@@ -719,4 +719,9 @@
     <string name="color_picker.hue">Hue</string>
     <string name="color_picker.saturation">Saturation</string>
     <string name="color_picker.lightness">Lightness</string>
+	<string name="settings.controls_auto_hide_delay">Controls auto-hide delay</string>
+	<string name="settings.controls_auto_hide_delay_summary">Time before playback controls hide; Disabled keeps them visible</string>
+	<string name="settings.controls_auto_hide_disabled">Disabled</string>
+	<string name="settings.controls_auto_hide_3">3 seconds</string>
+	<string name="settings.controls_auto_hide_5">5 seconds</string>
 </resources>

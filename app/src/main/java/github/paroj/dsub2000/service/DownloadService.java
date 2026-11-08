@@ -141,6 +141,8 @@ public class DownloadService extends MediaLibraryService {
 	private final List<DownloadFile> backgroundDownloadList = new ArrayList<DownloadFile>();
 	private final List<DownloadFile> toDelete = new ArrayList<DownloadFile>();
 	private final Handler handler = new Handler();
+	private final PlaybackStateUpdateCoalescer playbackStateUpdates =
+			new PlaybackStateUpdateCoalescer(this, handler::post, this::updatePlaybackState);
 	private Handler mediaPlayerHandler;
 	private final DownloadServiceLifecycleSupport lifecycleSupport = new DownloadServiceLifecycleSupport(this);
 	private ShufflePlayBuffer shufflePlayBuffer;
@@ -327,6 +329,8 @@ public class DownloadService extends MediaLibraryService {
 
 	@Override
 	public void onDestroy() {
+		playbackStateUpdates.stop();
+		handler.removeCallbacks(playbackStateUpdates);
 		super.onDestroy();
 		instance = null;
 
@@ -1520,6 +1524,13 @@ public class DownloadService extends MediaLibraryService {
 		return nextPlayerState;
 	}
 
+	private void updatePlaybackState() {
+		if (mRemoteControl != null) {
+			mRemoteControl.setPlaybackState(playerState.getRemoteControlClientPlayState(),
+					getCurrentPlayingIndex(), size());
+		}
+	}
+
 	public synchronized void setPlayerState(final PlayerState playerState) {
 		Log.i(TAG, this.playerState.name() + " -> " + playerState.name() + " (" + currentPlaying + ")");
 
@@ -1539,19 +1550,7 @@ public class DownloadService extends MediaLibraryService {
 			Util.requestAudioFocus(this, audioManager);
 		}
 
-		if(mRemoteControl != null) {
-			final int state = playerState.getRemoteControlClientPlayState();
-			final int index = getCurrentPlayingIndex();
-			final int queueSize = size();
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					if(mRemoteControl != null) {
-						mRemoteControl.setPlaybackState(state, index, queueSize);
-					}
-				}
-			});
-		}
+		playbackStateUpdates.request();
 
 		if (playerState == STARTED) {
 			scrobbler.scrobble(this, currentPlaying, false, false);
@@ -2792,6 +2791,7 @@ public class DownloadService extends MediaLibraryService {
 	}
 
 	private void onSongChanged() {
+		playbackStateUpdates.request();
 		final long atRevision = revision;
 		final boolean shouldFastForward = shouldFastForward();
 		for (final OnSongChangedListener listener : onSongChangedListeners) {
@@ -2818,6 +2818,7 @@ public class DownloadService extends MediaLibraryService {
 		}
 	}
 	private void onSongsChanged() {
+		playbackStateUpdates.request();
 		final long atRevision = revision;
 		final boolean shouldFastForward = shouldFastForward();
 		for (final OnSongChangedListener listener : onSongChangedListeners) {
@@ -2840,8 +2841,6 @@ public class DownloadService extends MediaLibraryService {
 		final Integer duration = getPlayerDuration();
 		final boolean isSeekable = isSeekable();
 		final int position = getPlayerPosition();
-		final int index = getCurrentPlayingIndex();
-		final int queueSize = size();
 
 		for (final OnSongChangedListener listener : onSongChangedListeners) {
 			if (!listener.wantsProgressUpdates()) {
@@ -2858,14 +2857,7 @@ public class DownloadService extends MediaLibraryService {
 		}
 
 		if(manual) {
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					if(mRemoteControl != null) {
-						mRemoteControl.setPlaybackState(playerState.getRemoteControlClientPlayState(), index, queueSize);
-					}
-				}
-			});
+			playbackStateUpdates.request();
 		}
 
 		// Setup next playing at least a couple of seconds into the song since both Chromecast and some DLNA clients report PLAYING when still PREPARING

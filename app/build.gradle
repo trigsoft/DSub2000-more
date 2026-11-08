@@ -71,6 +71,7 @@ android {
 def media3Version = '1.11.1'
 
 dependencies {
+	testImplementation 'junit:junit:4.13.2'
 	implementation project(':ServerProxy')
 	implementation fileTree(include: ['*.jar'], dir: 'libs')
 	implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
