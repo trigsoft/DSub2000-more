@@ -22,7 +22,7 @@ DSub2000-more is not currently published on F-Droid.
 
 ## Installation
 
-This fork uses the application ID `github.trigsoft.dsub2000more`, so it can be
+This fork uses the application ID `com.flowtech.dsub2000more`, so it can be
 installed alongside the original DSub2000 without replacing it. Settings and
 server accounts are separate; configure your server again after installation.
 

@@ -4,7 +4,7 @@ android {
 	compileSdkVersion 36
 
 	defaultConfig {
-		applicationId "github.trigsoft.dsub2000more"
+		applicationId "com.flowtech.dsub2000more"
 		minSdkVersion 24
 		targetSdkVersion 36
 		versionCode 221
