@@ -724,4 +724,18 @@
 	<string name="settings.controls_auto_hide_disabled">Disabled</string>
 	<string name="settings.controls_auto_hide_3">3 seconds</string>
 	<string name="settings.controls_auto_hide_5">5 seconds</string>
+
+	<string name="settings.menu_options.other_title">Other Items</string>
+	<string name="settings.menu_options.songs_title">Songs</string>
+	<string name="settings.menu_options.albums_title">Albums</string>
+	<string name="settings.menu_options.other_star_summary">Show Star for other items, such as artists and playlists</string>
+	<string name="settings.menu_options.other_shared_summary">Show Share for other items, such as playlists</string>
+	<string name="settings.menu_options.other_rate_summary">Show Rating for other items</string>
+	<string name="settings.menu_options.song_star_summary">Show Star for songs</string>
+	<string name="settings.menu_options.song_shared_summary">Show Share for songs</string>
+	<string name="settings.menu_options.song_rate_summary">Show Rating for songs</string>
+	<string name="settings.menu_options.album_star_summary">Show Star for albums</string>
+	<string name="settings.menu_options.album_shared_summary">Show Share for albums</string>
+	<string name="settings.menu_options.album_rate_summary">Show Rating for albums</string>
+
 </resources>

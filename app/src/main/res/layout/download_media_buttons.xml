@@ -8,6 +8,7 @@
     <ImageButton
             style="@style/PlaybackControl"
             android:id="@+id/download_repeat"
+            android:padding="14dp"
             android:src="?attr/media_button_repeat_off"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
@@ -71,6 +72,7 @@
     <ImageButton
             style="@style/PlaybackControl"
 			android:id="@+id/download_toggle_list"
+            android:padding="14dp"
 			android:src="?attr/toggle_list"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"

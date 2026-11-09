@@ -310,6 +310,12 @@ public class SettingsFragment extends PreferenceCompatFragment implements Shared
 		}
 
 		settings = Util.getPreferences(context);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_STAR, Constants.PREFERENCES_KEY_SONG_MENU_STAR);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_SHARED, Constants.PREFERENCES_KEY_SONG_MENU_SHARED);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_RATING, Constants.PREFERENCES_KEY_SONG_MENU_RATING);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_STAR, Constants.PREFERENCES_KEY_ALBUM_MENU_STAR);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_SHARED, Constants.PREFERENCES_KEY_ALBUM_MENU_SHARED);
+		migrateMenuPreference(Constants.PREFERENCES_KEY_MENU_RATING, Constants.PREFERENCES_KEY_ALBUM_MENU_RATING);
 		serverCount = settings.getInt(Constants.PREFERENCES_KEY_SERVER_COUNT, 1);
 
 		if(cacheSize != null) {
@@ -425,6 +431,12 @@ public class SettingsFragment extends PreferenceCompatFragment implements Shared
         }
 
 		update();
+	}
+
+	private void migrateMenuPreference(String oldKey, String newKey) {
+		if(!settings.contains(newKey)) {
+			settings.edit().putBoolean(newKey, settings.getBoolean(oldKey, true)).apply();
+		}
 	}
 
 	private void scheduleBackup() {

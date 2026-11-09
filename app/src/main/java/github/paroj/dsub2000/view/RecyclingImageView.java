@@ -17,6 +17,8 @@ package github.paroj.dsub2000.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -27,6 +29,9 @@ public class RecyclingImageView extends ImageView {
 	private boolean invalidated = false;
 	private OnInvalidated onInvalidated;
     private OnImageChangedListener listener;
+	private final Path clipPath = new Path();
+	private final RectF clipBounds = new RectF();
+	private float cornerRadius;
     public interface OnImageChangedListener {
         void onImageChanged(Drawable drawable);
     }
@@ -49,6 +54,13 @@ public class RecyclingImageView extends ImageView {
 
 	@Override
 	public void onDraw(Canvas canvas) {
+		if(cornerRadius > 0) {
+			clipBounds.set(0, 0, getWidth(), getHeight());
+			clipPath.reset();
+			clipPath.addRoundRect(clipBounds, cornerRadius, cornerRadius, Path.Direction.CW);
+			canvas.save();
+			canvas.clipPath(clipPath);
+		}
 		Drawable drawable = this.getDrawable();
 		if(drawable != null) {
 			if(drawable instanceof BitmapDrawable) {
@@ -79,6 +91,7 @@ public class RecyclingImageView extends ImageView {
 		}
 
 		super.onDraw(canvas);
+		if(cornerRadius > 0) canvas.restore();
 	}
 
 	@Override
@@ -106,6 +119,11 @@ public class RecyclingImageView extends ImageView {
     public void setOnImageChangedListener(OnImageChangedListener listener) {
         this.listener = listener;
     }
+
+	public void setCornerRadius(float cornerRadius) {
+		this.cornerRadius = cornerRadius;
+		invalidate();
+	}
 
 	public void setInvalidated(boolean invalidated) {
 		this.invalidated = invalidated;

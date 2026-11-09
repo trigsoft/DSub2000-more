@@ -37,6 +37,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.appbar.MaterialToolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -698,6 +699,23 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		}
 		setSupportActionBar(mainToolbar);
 		recreateSpinner();
+	}
+
+	@Override
+	protected void recreateSpinner() {
+		boolean centeredAlbumTitle = !isTv() && !nowPlayingToolbarActive && mainToolbar instanceof MaterialToolbar
+				&& currentFragment instanceof SelectDirectoryFragment
+				&& ((SelectDirectoryFragment) currentFragment).isAlbumDetailHeader();
+		if(mainToolbar instanceof MaterialToolbar) ((MaterialToolbar) mainToolbar).setTitleCentered(centeredAlbumTitle);
+		if(!centeredAlbumTitle) {
+			super.recreateSpinner();
+			return;
+		}
+		getSupportActionBar().setDisplayShowCustomEnabled(false);
+		getSupportActionBar().setDisplayShowTitleEnabled(true);
+		getSupportActionBar().setTitle(currentFragment.getTitle());
+		if(drawerToggle != null) drawerToggle.setDrawerIndicatorEnabled(backStack.isEmpty());
+		getSupportActionBar().setDisplayHomeAsUpEnabled(!backStack.isEmpty());
 	}
 
 	@Override

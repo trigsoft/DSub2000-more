@@ -19,9 +19,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import android.animation.ValueAnimator;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.DialogInterface;
@@ -29,20 +30,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Rect;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 
-import androidx.core.graphics.ColorUtils;
 import androidx.core.view.MenuItemCompat;
 import androidx.mediarouter.app.MediaRouteButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
@@ -54,11 +56,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.Gravity;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import com.google.android.material.slider.Slider;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
@@ -85,10 +90,12 @@ import github.paroj.dsub2000.util.Constants;
 import github.paroj.dsub2000.util.SilentBackgroundTask;
 import github.paroj.dsub2000.adapter.DownloadFileAdapter;
 import github.paroj.dsub2000.view.FadeOutAnimation;
+import github.paroj.dsub2000.view.ArtworkBackdropDrawable;
 import github.paroj.dsub2000.view.FastScroller;
 import github.paroj.dsub2000.view.RecyclingImageView;
 import github.paroj.dsub2000.view.UpdateView;
 import github.paroj.dsub2000.util.Sliders;
+import github.paroj.dsub2000.util.MenuUtil;
 import github.paroj.dsub2000.util.Util;
 
 import static github.paroj.dsub2000.domain.MusicDirectory.Entry;
@@ -108,8 +115,15 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 	private static final int ACTION_CLOSE = 4;
 
     private FrameLayout downloadLayout;
-    private int lastAlbumArtColor;
-    private GradientDrawable glowDrawable;
+    private View playerLayout;
+    private View coverStage;
+    private FrameLayout coverContainer;
+    private ViewTreeObserver.OnGlobalLayoutListener coverSizeListener;
+    private boolean showArtworkGradient;
+    private final Handler artworkBackgroundHandler = new Handler(Looper.getMainLooper());
+    private ExecutorService artworkBackgroundExecutor;
+    private Future<?> artworkBackgroundTask;
+    private int artworkBackgroundRequestId;
 	private ViewFlipper playlistFlipper;
 	private TextView emptyTextView;
 	private TextView songTitleTextView;
@@ -182,58 +196,25 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		swipeDistance = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
 		swipeVelocity = (d.getWidth() + d.getHeight()) * PERCENTAGE_OF_SCREEN_FOR_SWIPE / 100;
 		gestureScanner = new GestureDetector(this);
-        downloadLayout = (FrameLayout) rootView.findViewById(R.id.download_album_art_background);
-        downloadLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent me) {
-                return gestureScanner.onTouchEvent(me);
-            }
-        });
-        albumArtImageView = (RecyclingImageView)rootView.findViewById(R.id.download_album_art_image);
-        if (albumArtImageView != null && downloadLayout != null) {
-            glowDrawable = new GradientDrawable();
-            downloadLayout.setBackground(glowDrawable);
-            albumArtImageView.setOnImageChangedListener(drawable -> {
-                if (drawable == null || drawable instanceof TransitionDrawable) {
-                    return;
-                }
-                Bitmap bitmap = ImageUtil.getBitmapFromDrawable(drawable);
-                int albumArtColor = ImageUtil.getVibrantColorFromBitmap(bitmap, Color.TRANSPARENT);
-                if (albumArtColor == Color.TRANSPARENT || lastAlbumArtColor == albumArtColor) {
-                    return;
-                }
-
-                int gWidth = downloadLayout.getMeasuredWidth();
-                int gHeight = downloadLayout.getMeasuredHeight();
-                float gradientRadius = Math.max(gWidth, gHeight) * 0.52f;
-                glowDrawable.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-                glowDrawable.setGradientRadius(gradientRadius);
-                glowDrawable.setDither(true);
-
-                ValueAnimator animator = ValueAnimator.ofArgb(lastAlbumArtColor, albumArtColor);
-                animator.setDuration(900);
-                animator.addUpdateListener(animation -> {
-                    int color = (int) animation.getAnimatedValue();
-                    glowDrawable.setColors(new int[]{
-                            ColorUtils.setAlphaComponent(color, 100),
-                            ColorUtils.setAlphaComponent(color, 100),
-                            ColorUtils.setAlphaComponent(color, 100),
-                            ColorUtils.setAlphaComponent(color, 80),
-                            ColorUtils.setAlphaComponent(color, 0)
-                    });
-                });
-                animator.start();
-                lastAlbumArtColor = albumArtColor;
+        playerLayout = rootView.findViewById(R.id.download_layout);
+        if(playerLayout != null) playerLayout.setBackgroundColor(getPlayerBackgroundColor());
+        downloadLayout = (FrameLayout) rootView.findViewById(R.id.download_cover_stage);
+        if(downloadLayout != null) {
+            downloadLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override public boolean onTouch(View v, MotionEvent me) { return gestureScanner.onTouchEvent(me); }
             });
-            albumArtImageView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent me) {
-                    if (me.getAction() == MotionEvent.ACTION_DOWN) {
-                        lastY = (int) me.getRawY();
-                    }
-                    return gestureScanner.onTouchEvent(me);
-                }
-            });
+        }
+        artworkBackgroundExecutor = Executors.newSingleThreadExecutor();
+        albumArtImageView = (RecyclingImageView) rootView.findViewById(R.id.download_album_art_image);
+        albumArtImageView.setCornerRadius(5 * getResources().getDisplayMetrics().density);
+        albumArtImageView.setOnImageChangedListener(this::updateArtworkBackground);
+        coverStage = rootView.findViewById(R.id.download_cover_stage);
+        coverContainer = (FrameLayout) rootView.findViewById(R.id.download_cover_container);
+        if(coverStage != null && coverContainer != null) {
+            coverSizeListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override public void onGlobalLayout() { updatePlayerContentPosition(); }
+            };
+            rootView.getViewTreeObserver().addOnGlobalLayoutListener(coverSizeListener);
         }
 
 		playlistFlipper = (ViewFlipper)rootView.findViewById(R.id.download_playlist_flipper);
@@ -266,7 +247,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		touchHelper.attachToRecyclerView(playlistView);
 
 		starButton = (ImageButton)rootView.findViewById(R.id.download_star);
-		if(Util.getPreferences(context).getBoolean(Constants.PREFERENCES_KEY_MENU_STAR, true)) {
+		if(MenuUtil.showSongStar(Util.getPreferences(context))) {
 			starButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -530,6 +511,96 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		});
 
 		return rootView;
+	}
+
+	private void updatePlayerContentPosition() {
+		if(coverStage == null || coverContainer == null) return;
+		if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			if(playlistFlipper.getParent() == rootView.findViewById(R.id.download_control_layout)) {
+				LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) playlistFlipper.getLayoutParams();
+				boolean showingQueue = playlistFlipper.getDisplayedChild() == 1;
+				int height = showingQueue ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
+				float weight = showingQueue ? 1f : 0f;
+				if(params.height != height || params.weight != weight) { params.height = height; params.weight = weight; playlistFlipper.setLayoutParams(params); }
+			}
+			int available = Math.min(coverStage.getWidth(), coverStage.getHeight());
+			if(available > 0) setPlayerCoverSize(Math.round(available * 0.90f));
+			return;
+		}
+		if(playlistFlipper.getDisplayedChild() != 0) return;
+		LinearLayout artworkLayout = (LinearLayout) coverStage.getParent();
+		int infoHeight = artworkLayout.getPaddingTop() + artworkLayout.getPaddingBottom();
+		for(int i = 0; i < artworkLayout.getChildCount(); i++) {
+			View child = artworkLayout.getChildAt(i);
+			if(child == coverStage || child.getVisibility() == View.GONE) continue;
+			ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) child.getLayoutParams();
+			infoHeight += child.getMeasuredHeight() + params.topMargin + params.bottomMargin;
+		}
+		int available = Math.min(coverStage.getWidth(), Math.max(0, coverStage.getHeight() - infoHeight));
+		int size = Math.min(Math.round(coverStage.getWidth() * 0.90f), available);
+		setPlayerCoverSize(size);
+		LinearLayout.LayoutParams stageParams = (LinearLayout.LayoutParams) coverStage.getLayoutParams();
+		if(stageParams.height != size || stageParams.weight != 0f) { stageParams.height = size; stageParams.weight = 0f; coverStage.setLayoutParams(stageParams); }
+		artworkLayout.setGravity(Gravity.CENTER);
+	}
+
+	private void setPlayerCoverSize(int size) {
+		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) coverContainer.getLayoutParams();
+		if(params.width != size || params.height != size) { params.width = size; params.height = size; params.gravity = Gravity.CENTER; coverContainer.setLayoutParams(params); }
+	}
+
+	private int getPlayerBackgroundColor() {
+		TypedValue value = new TypedValue();
+		if(context.getTheme().resolveAttribute(android.R.attr.colorBackground, value, true)) {
+			if(value.resourceId != 0) return context.getResources().getColor(value.resourceId);
+			return value.data;
+		}
+		return android.graphics.Color.BLACK;
+	}
+
+	private void loadAlbumArt(Entry song, boolean crossfade) {
+		artworkBackgroundRequestId++;
+		if(artworkBackgroundTask != null) { artworkBackgroundTask.cancel(true); artworkBackgroundTask = null; }
+		showArtworkGradient = song != null && song.getCoverArt() != null;
+		if(playerLayout != null) playerLayout.setBackgroundColor(getPlayerBackgroundColor());
+		getImageLoader().loadImage(albumArtImageView, song, true, crossfade);
+	}
+
+	private void updateArtworkBackground(Drawable drawable) {
+		if(playerLayout == null) return;
+		if(drawable instanceof TransitionDrawable) {
+			TransitionDrawable transition = (TransitionDrawable) drawable;
+			drawable = transition.getDrawable(transition.getNumberOfLayers() - 1);
+		}
+		if(!(drawable instanceof BitmapDrawable)) { playerLayout.setBackgroundColor(getPlayerBackgroundColor()); return; }
+		Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+		if(bitmap == null || bitmap.isRecycled() || artworkBackgroundExecutor == null || !showArtworkGradient) return;
+		int width = Math.min(64, bitmap.getWidth()), height = Math.min(64, bitmap.getHeight());
+		if(width <= 0 || height <= 0) return;
+		int[] pixels = new int[width * height];
+		try {
+			for(int y = 0; y < height; y++) for(int x = 0; x < width; x++) {
+				int sourceX = Math.min(bitmap.getWidth() - 1, (int) ((x + 0.5f) * bitmap.getWidth() / width));
+				int sourceY = Math.min(bitmap.getHeight() - 1, (int) ((y + 0.5f) * bitmap.getHeight() / height));
+				pixels[y * width + x] = bitmap.getPixel(sourceX, sourceY);
+			}
+		} catch(IllegalStateException recycled) { return; }
+		final int request = ++artworkBackgroundRequestId;
+		final int surface = getPlayerBackgroundColor();
+		artworkBackgroundTask = artworkBackgroundExecutor.submit(() -> {
+			final ArtworkBackdropDrawable background = ArtworkBackdropDrawable.create(pixels, width, height, surface);
+			artworkBackgroundHandler.post(() -> { if(request == artworkBackgroundRequestId && playerLayout != null && showArtworkGradient) playerLayout.setBackground(background); });
+		});
+	}
+
+	@Override
+	public void onDestroyView() {
+		artworkBackgroundRequestId++;
+		if(artworkBackgroundTask != null) { artworkBackgroundTask.cancel(true); artworkBackgroundTask = null; }
+		if(artworkBackgroundExecutor != null) { artworkBackgroundExecutor.shutdownNow(); artworkBackgroundExecutor = null; }
+		if(rootView != null && coverSizeListener != null && rootView.getViewTreeObserver().isAlive()) rootView.getViewTreeObserver().removeOnGlobalLayoutListener(coverSizeListener);
+		playerLayout = null; downloadLayout = null; coverStage = null; coverContainer = null;
+		super.onDestroyView();
 	}
 
 	@Override
@@ -838,7 +909,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		updateButtons();
 
 		if(currentPlaying == null && downloadService != null && currentPlaying == downloadService.getCurrentPlaying()) {
-			getImageLoader().loadImage(albumArtImageView, (Entry) null, true, false);
+			loadAlbumArt(null, false);
 		}
 
 		context.runWhenServiceAvailable(new Runnable() {
@@ -1364,7 +1435,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		if (currentPlaying != null) {
 			Entry song = currentPlaying.getSong();
 			songTitleTextView.setText(song.getTitle());
-			getImageLoader().loadImage(albumArtImageView, song, true, true);
+			loadAlbumArt(song, true);
 
 			DownloadService downloadService = getDownloadService();
 			if(downloadService.isCurrentPlayingSingle()) {
@@ -1378,7 +1449,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 			}
 		} else {
 			songTitleTextView.setText(null);
-			getImageLoader().loadImage(albumArtImageView, (Entry) null, true, false);
+			loadAlbumArt(null, false);
 			setSubtitle(null);
 		}
 	}
@@ -1561,7 +1632,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		}
 
 		if(song != null && albumArtImageView != null && fieldChange == DownloadService.METADATA_UPDATED_COVER_ART) {
-			getImageLoader().loadImage(albumArtImageView, song, true, true);
+			loadAlbumArt(song, true);
 		}
 	}
 

@@ -24,6 +24,7 @@ import java.io.File;
 
 import github.paroj.dsub2000.R;
 import github.paroj.dsub2000.domain.ServerInfo;
+import github.paroj.dsub2000.domain.MusicDirectory;
 import github.paroj.dsub2000.service.DownloadFile;
 import github.paroj.dsub2000.view.AlbumView;
 import github.paroj.dsub2000.view.ArtistEntryView;
@@ -33,6 +34,18 @@ import github.paroj.dsub2000.view.UpdateView;
 
 public final class MenuUtil {
 	private final static String TAG = MenuUtil.class.getSimpleName();
+
+	private static boolean isSongView(UpdateView updateView) {
+		if(!(updateView instanceof SongView)) return false;
+		MusicDirectory.Entry entry = ((SongView) updateView).getEntry();
+		return entry == null || (!entry.isPodcast() && !entry.isVideo());
+	}
+	public static boolean showSongStar(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_SONG_MENU_STAR, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_STAR, true)); }
+	public static boolean showSongShare(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_SONG_MENU_SHARED, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_SHARED, true)); }
+	public static boolean showSongRating(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_SONG_MENU_RATING, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_RATING, true)); }
+	public static boolean showAlbumStar(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_ALBUM_MENU_STAR, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_STAR, true)); }
+	public static boolean showAlbumShare(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_ALBUM_MENU_SHARED, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_SHARED, true)); }
+	public static boolean showAlbumRating(SharedPreferences prefs) { return prefs.getBoolean(Constants.PREFERENCES_KEY_ALBUM_MENU_RATING, prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_RATING, true)); }
 
 	public static void hideMenuItems(Context context, Menu menu, UpdateView updateView) {
 		if(!ServerInfo.checkServerVersion(context, "1.8")) {
@@ -68,15 +81,14 @@ public final class MenuUtil {
 		if(!prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_DELETE, false)) {
 			menu.setGroupVisible(R.id.hide_delete, false);
 		}
-		if(!prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_STAR, true)) {
-			menu.setGroupVisible(R.id.hide_star, false);
-		}
-		if(!prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_SHARED, true) || !UserUtil.canShare()) {
-			menu.setGroupVisible(R.id.hide_share, false);
-		}
-		if(!prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_RATING, true)) {
-			menu.setGroupVisible(R.id.hide_rating, false);
-		}
+		boolean songMenu = isSongView(updateView);
+		boolean albumMenu = updateView instanceof AlbumView && ((AlbumView) updateView).usesAlbumMenuOptions();
+		boolean showStar = albumMenu ? showAlbumStar(prefs) : songMenu ? showSongStar(prefs) : prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_STAR, true);
+		boolean showShare = albumMenu ? showAlbumShare(prefs) : songMenu ? showSongShare(prefs) : prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_SHARED, true);
+		boolean showRating = albumMenu ? showAlbumRating(prefs) : songMenu ? showSongRating(prefs) : prefs.getBoolean(Constants.PREFERENCES_KEY_MENU_RATING, true);
+		if(!showStar) menu.setGroupVisible(R.id.hide_star, false);
+		if(!showShare || !UserUtil.canShare()) menu.setGroupVisible(R.id.hide_share, false);
+		if(!showRating) menu.setGroupVisible(R.id.hide_rating, false);
 
 		if(!Util.isOffline(context)) {
 			// If we are looking at a standard song view, get downloadFile to cache what options to show

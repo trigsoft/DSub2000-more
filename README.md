@@ -10,6 +10,9 @@ It retains the upstream settings back-navigation behavior and adds:
 * A configurable Now Playing controls auto-hide delay, including an option to disable it
 * Wrapping for long Now Playing track titles and text on generated placeholder cover art
 * Coalescing of pending remote playback-state updates so the latest state is sent
+* A music-library folder list with an all-folders option, plus metadata-based album detail pages
+* Separate song and album menu visibility settings, and a responsive artwork-focused player
+* Themed list separators, shadow-free toolbars, and single-line truncated list names
 
 Subsonic is a cross-platform FOSS media server that's capable of indexing very
 large media collections. The server can transcode if necessary so that the app

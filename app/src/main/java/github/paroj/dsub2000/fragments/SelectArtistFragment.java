@@ -31,13 +31,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> implements ArtistAdapter.OnMusicFolderChanged {
+public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> {
 	private static final String TAG = SelectArtistFragment.class.getSimpleName();
+	private static final String ARG_SHOW_ARTISTS = "showArtists";
+	private static final String ARG_FOLDER_TITLE = "folderTitle";
     private SelectArtistViewModel viewModel;
 	private List<MusicFolder> musicFolders = null;
 	private List<Entry> entries;
 	private String groupId;
 	private String groupName;
+	private boolean showArtists;
 
 	public SelectArtistFragment() {
 		super();
@@ -48,6 +51,10 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 		super.onCreate(bundle);
 
 	    viewModel = new ViewModelProvider(this).get(SelectArtistViewModel.class);
+		Bundle args = getArguments();
+		if(args != null) {
+			showArtists = args.getBoolean(ARG_SHOW_ARTISTS, false);
+		}
 		if(bundle != null) {
             musicFolders = viewModel.getMusicFolders().getValue();
 		}
@@ -64,6 +71,10 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle) {
 		Bundle args = getArguments();
 		if(args != null) {
+			if(args.getBoolean(ARG_SHOW_ARTISTS, false)) {
+				String folderTitle = args.getString(ARG_FOLDER_TITLE);
+				if(folderTitle != null) setTitle(folderTitle);
+			}
 			if(args.getBoolean(Constants.INTENT_EXTRA_NAME_ARTIST, false)) {
 				groupId = args.getString(Constants.INTENT_EXTRA_NAME_ID);
 				groupName = args.getString(Constants.INTENT_EXTRA_NAME_NAME);
@@ -76,6 +87,7 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 		}
 
 		super.onCreateView(inflater, container, bundle);
+		if(groupId != null && objects != null) rootView.post(this::openAlbumIfNeeded);
 
 		return rootView;
 	}
@@ -94,7 +106,16 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 	@Override
 	public void onItemClicked(UpdateView<Serializable> updateView, Serializable item) {
 		SubsonicFragment fragment;
-		if(item instanceof Artist) {
+		if(item instanceof MusicFolder) {
+			MusicFolder folder = (MusicFolder) item;
+			Util.setSelectedMusicFolderId(context, folder.getId());
+			fragment = new SelectArtistFragment();
+			Bundle args = new Bundle();
+			args.putBoolean(ARG_SHOW_ARTISTS, true);
+			args.putString(ARG_FOLDER_TITLE, folder.getName());
+			fragment.setArguments(args);
+			replaceFragment(fragment);
+		} else if(item instanceof Artist) {
 			Artist artist = (Artist) item;
 
 			if ((Util.isFirstLevelArtist(context) || Util.isOffline(context) || Util.isTagBrowsing(context)) || groupId != null) {
@@ -168,7 +189,7 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 
 	@Override
 	public SectionAdapter getAdapter(List<Serializable> objects) {
-		return new ArtistAdapter(context, objects, musicFolders, this, this);
+		return new ArtistAdapter(context, objects, this);
 	}
 
 	@Override
@@ -185,6 +206,13 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 				}
 			} else {
 				musicFolders = null;
+			}
+			if(musicFolders != null && musicFolders.size() > 1 && !showArtists) {
+				items = new ArrayList<>(musicFolders.size() + 1);
+				items.add(new MusicFolder(null, context.getString(R.string.select_artist_all_folders)));
+				items.addAll(musicFolders);
+				entries = new ArrayList<>();
+				return items;
 			}
 			String musicFolderId = Util.getSelectedMusicFolderId(context);
 
@@ -222,7 +250,7 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 
 	@Override
 	public int getTitleResource() {
-		return groupId == null ? R.string.button_bar_browse : 0;
+		return groupId == null && !showArtists ? R.string.button_bar_browse : 0;
 	}
 
 	@Override
@@ -231,7 +259,7 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 
 		if(empty && !Util.isOffline(context)) {
 			objects.clear();
-			recyclerView.setAdapter(new ArtistAdapter(context, objects, musicFolders, this, this));
+			recyclerView.setAdapter(new ArtistAdapter(context, objects, this));
 			recyclerView.setVisibility(View.VISIBLE);
 
 			View view = rootView.findViewById(R.id.tab_progress);
@@ -242,19 +270,31 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> i
 		}
 	}
 
+	@Override
+	public void onFinishRefresh() {
+		openAlbumIfNeeded();
+	}
+
+	private void openAlbumIfNeeded() {
+		if(groupId == null || objects == null || !isAdded() || context.getCurrentFragment() != this) return;
+		List<Entry> tracks = new ArrayList<>();
+		for(Serializable item : objects) {
+			if(!(item instanceof Entry)) return;
+			tracks.add((Entry) item);
+		}
+		if(!SelectDirectoryFragment.hasAlbumTrackMetadata(new MusicDirectory(tracks))) return;
+		SubsonicFragment fragment = new SelectDirectoryFragment();
+		Bundle args = new Bundle();
+		args.putString(Constants.INTENT_EXTRA_NAME_ID, groupId);
+		args.putString(Constants.INTENT_EXTRA_NAME_NAME, groupName);
+		args.putBoolean(Constants.INTENT_EXTRA_ALBUM_DETAIL, true);
+		fragment.setArguments(args);
+		replaceExistingFragment(fragment);
+	}
+
 	private void toggleFirstLevelArtist() {
 		Util.toggleFirstLevelArtist(context);
 		context.invalidateOptionsMenu();
 	}
 
-	@Override
-	public void onMusicFolderChanged(MusicFolder selectedFolder) {
-		String startMusicFolderId = Util.getSelectedMusicFolderId(context);
-		String musicFolderId = selectedFolder == null ? null : selectedFolder.getId();
-
-		if(!Util.equals(startMusicFolderId, musicFolderId)) {
-			Util.setSelectedMusicFolderId(context, musicFolderId);
-			context.invalidate();
-		}
-	}
 }
