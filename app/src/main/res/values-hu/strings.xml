@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string name="common.appname">DSub2000</string>
+	<string name="common.appname">DSub2000-M</string>
 	<string name="attribution_audio_playback">Hanglejátszás</string>
 	<string name="attribution_empty" translatable="false"></string>
 	<string name="common.ok">OK</string>

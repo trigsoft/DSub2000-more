@@ -71,7 +71,7 @@
     <string name="changelog_title">最新消息</string>
     <string name="changelog_version_format">版本%s</string>
     <string name="chat.send_a_message">发送消息</string>
-    <string name="common.appname" >DSub2000</string>
+    <string name="common.appname" >DSub2000-M</string>
     <string name="common.cancel">取消</string>
     <string name="common.close">关闭</string>
     <string name="common.comment">评论</string>
