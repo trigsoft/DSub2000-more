@@ -47,24 +47,6 @@
 			android:textSize="18sp"
 			android:textColor="?attr/colorAccent" />
 
-		<TextView
-			android:id="@+id/select_album_song_count"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="6dp"
-			android:includeFontPadding="false"
-			android:gravity="center"
-			android:maxLines="2"
-			android:ellipsize="end"
-			android:textSize="14sp"
-			android:textColor="?android:attr/textColorSecondary" />
-
-		<TextView
-			android:id="@+id/select_album_song_length"
-			android:layout_width="0dp"
-			android:layout_height="0dp"
-			android:visibility="gone" />
-
 		<LinearLayout
 			android:id="@+id/select_album_play_controls"
 			android:layout_width="match_parent"
@@ -137,6 +119,24 @@
 					android:ellipsize="end" />
 			</LinearLayout>
 		</LinearLayout>
+
+		<TextView
+			android:id="@+id/select_album_song_count"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="6dp"
+			android:includeFontPadding="false"
+			android:gravity="center"
+			android:maxLines="2"
+			android:ellipsize="end"
+			android:textSize="14sp"
+			android:textColor="?android:attr/textColorSecondary" />
+
+		<TextView
+			android:id="@+id/select_album_song_length"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			android:visibility="gone" />
 
 		<LinearLayout
 			android:layout_width="wrap_content"

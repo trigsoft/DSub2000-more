@@ -1213,8 +1213,20 @@ public class SelectDirectoryFragment extends SubsonicFragment implements Section
 		} else if(entries.size() > 0) {
 			coverArtRep = null;
 			this.coverArtView = coverArtView;
-			for (int i = 0; (i < 3) && (coverArtRep == null || coverArtRep.getCoverArt() == null); i++) {
-				coverArtRep = entries.get(random.nextInt(entries.size()));
+			if(isAlbumDetailHeader() && directory != null && directory.getCoverArt() != null) {
+				coverArtRep = directory;
+			} else if(isAlbumDetailHeader()) {
+				for(Entry entry : entries) {
+					if(entry.getCoverArt() != null) {
+						coverArtRep = entry;
+						break;
+					}
+				}
+			}
+			if(coverArtRep == null) {
+				for (int i = 0; (i < 3) && (coverArtRep == null || coverArtRep.getCoverArt() == null); i++) {
+					coverArtRep = entries.get(random.nextInt(entries.size()));
+				}
 			}
 
 			coverArtView.setOnClickListener(new View.OnClickListener() {
