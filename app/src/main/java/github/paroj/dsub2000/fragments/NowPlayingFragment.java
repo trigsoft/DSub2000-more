@@ -628,14 +628,26 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 	private void setArtworkBackground(Drawable background) {
 		if(playerLayout != null) playerLayout.setBackgroundColor(Color.TRANSPARENT);
 		View sheetBackground = getActivity() == null ? null : getActivity().findViewById(R.id.player_sheet_artwork_background);
-		if(sheetBackground != null) sheetBackground.setBackground(background);
+		if(sheetBackground == null) return;
+		Drawable previous = sheetBackground.getBackground();
+		if(previous instanceof TransitionDrawable) {
+			TransitionDrawable transition = (TransitionDrawable) previous;
+			previous = transition.getDrawable(transition.getNumberOfLayers() - 1);
+		}
+		if(background != null && previous != null) {
+			TransitionDrawable fade = new TransitionDrawable(new Drawable[] {previous, background});
+			sheetBackground.setBackground(fade);
+			fade.startTransition(300);
+		} else {
+			sheetBackground.setBackground(background);
+		}
 	}
 
 	private void loadAlbumArt(Entry song, boolean crossfade) {
 		artworkBackgroundRequestId++;
 		if(artworkBackgroundTask != null) { artworkBackgroundTask.cancel(true); artworkBackgroundTask = null; }
 		showArtworkGradient = song != null && song.getCoverArt() != null;
-		setArtworkBackground(null);
+		if(!showArtworkGradient) setArtworkBackground(null);
 		getImageLoader().loadImage(albumArtImageView, song, true, crossfade);
 	}
 
@@ -645,7 +657,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 			TransitionDrawable transition = (TransitionDrawable) drawable;
 			drawable = transition.getDrawable(transition.getNumberOfLayers() - 1);
 		}
-		if(!(drawable instanceof BitmapDrawable)) { setArtworkBackground(null); return; }
+		if(!(drawable instanceof BitmapDrawable)) { if(!showArtworkGradient) setArtworkBackground(null); return; }
 		Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
 		if(bitmap == null || bitmap.isRecycled() || artworkBackgroundExecutor == null || !showArtworkGradient) return;
 		int width = Math.min(64, bitmap.getWidth()), height = Math.min(64, bitmap.getHeight());
