@@ -53,6 +53,9 @@ public class AlbumView extends UpdateView2<MusicDirectory.Entry, ImageLoader> {
 		}
 
 		coverArtView = findViewById(R.id.album_coverart);
+		if(!cell) {
+			((RecyclingImageView) coverArtView).setCornerRadius(6 * getResources().getDisplayMetrics().density);
+		}
 		titleView = (TextView) findViewById(R.id.album_title);
 		artistView = (TextView) findViewById(R.id.album_artist);
 

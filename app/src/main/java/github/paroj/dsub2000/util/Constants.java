@@ -164,10 +164,8 @@ public final class Constants {
 	public static final String PREFERENCES_KEY_BROWSE_TAGS = "browseTags";
 	public static final String PREFERENCES_KEY_OPEN_TO_TAB = "openToTab";
 	public static final String PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY = "rememberLastDirectory";
-	public static final String PREFERENCES_KEY_LAST_DIRECTORY_ID = "lastDirectoryId";
-	public static final String PREFERENCES_KEY_LAST_DIRECTORY_NAME = "lastDirectoryName";
-	public static final String PREFERENCES_KEY_LAST_DIRECTORY_ARTIST = "lastDirectoryArtist";
-	public static final String PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT = "lastDirectoryLookupParent";
+	public static final String PREFERENCES_KEY_LAST_DIRECTORY_PATH = "lastDirectoryPath";
+	public static final String PREFERENCES_KEY_LAST_DIRECTORY_ROOT = "lastDirectoryRoot";
 	public static final String PREFERENCES_KEY_OVERRIDE_SYSTEM_LANGUAGE = "overrideSystemLanguage";
 	// public static final String PREFERENCES_KEY_PLAY_NOW_AFTER = "playNowAfter";
 	public static final String PREFERENCES_KEY_SONG_PRESS_ACTION = "songPressAction";

@@ -1,6 +1,9 @@
 package github.paroj.dsub2000.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -86,10 +89,39 @@ public class SelectArtistFragment extends SelectRecyclerFragment<Serializable> {
 			}
 		}
 
+		context.rememberNavigationPath();
+
 		super.onCreateView(inflater, container, bundle);
 		if(groupId != null && objects != null) rootView.post(this::openAlbumIfNeeded);
 
 		return rootView;
+	}
+
+	@Override
+	public JSONObject getRememberedEntry(Context ctx) {
+		Bundle args = getArguments();
+		if (args == null) {
+			return null;
+		}
+		try {
+			if (args.getBoolean(ARG_SHOW_ARTISTS, false)) {
+				String folderTitle = args.getString(ARG_FOLDER_TITLE);
+				String folderId = Util.getSelectedMusicFolderId(ctx);
+				if (folderTitle == null || folderId == null) {
+					return null;
+				}
+				return new JSONObject().put("type", "folder")
+						.put("name", folderTitle).put("folderId", folderId);
+			}
+			String artistId = args.getString(Constants.INTENT_EXTRA_NAME_ID);
+			String artistName = args.getString(Constants.INTENT_EXTRA_NAME_NAME);
+			if (artistId == null || artistName == null || !args.getBoolean(Constants.INTENT_EXTRA_NAME_ARTIST, false)) {
+				return null;
+			}
+			return new JSONObject().put("type", "artist").put("id", artistId).put("name", artistName);
+		} catch (JSONException e) {
+			return null;
+		}
 	}
 
 	@Override

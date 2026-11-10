@@ -26,6 +26,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -52,10 +55,12 @@ import android.widget.TextView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import github.paroj.dsub2000.R;
+import github.paroj.dsub2000.domain.Artist;
 import github.paroj.dsub2000.domain.MusicDirectory;
 import github.paroj.dsub2000.domain.PlayerQueue;
 import github.paroj.dsub2000.domain.PlayerState;
@@ -172,20 +177,13 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		setContentView(R.layout.abstract_fragment_activity);
 
 		if (findViewById(R.id.fragment_container) != null && savedInstanceState == null) {
-			boolean restoreLastDirectory = !hasExplicitDestinationIntent()
-					&& Util.getPreferences(this).getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false);
 			SharedPreferences prefs = Util.getPreferences(this);
-			String lastDirectoryId = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, null);
-			String lastDirectoryName = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME, null);
-			restoreLastDirectory = restoreLastDirectory && lastDirectoryId != null && lastDirectoryName != null;
-			if (!restoreLastDirectory && (lastDirectoryId == null || lastDirectoryName == null)) {
-				prefs.edit()
-						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID)
-						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME)
-						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST)
-						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT)
-						.apply();
+			List<SubsonicFragment> restoredDirectories = new ArrayList<SubsonicFragment>();
+			if (!hasExplicitDestinationIntent()
+					&& prefs.getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false)) {
+				restoredDirectories = readRememberedDirectories(prefs);
 			}
+			boolean restoreLastDirectory = !restoredDirectories.isEmpty();
 
 			String fragmentType = getIntent().getStringExtra(Constants.INTENT_EXTRA_FRAGMENT_TYPE);
 			if(fragmentType == null) {
@@ -206,20 +204,11 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 			}
 
 			if (restoreLastDirectory) {
-				fragmentType = "Artist";
-				lastSelectedPosition = R.id.drawer_library;
+				fragmentType = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ROOT, "Artist");
+				lastSelectedPosition = getDrawerItemId(fragmentType);
 			}
-			currentFragment = restoreLastDirectory ? new SelectDirectoryFragment() : getNewFragment(fragmentType);
+			currentFragment = getNewFragment(fragmentType);
 			if (restoreLastDirectory) {
-				Bundle args = new Bundle();
-				args.putString(Constants.INTENT_EXTRA_NAME_ID, lastDirectoryId);
-				args.putString(Constants.INTENT_EXTRA_NAME_NAME, lastDirectoryName);
-				args.putBoolean(Constants.INTENT_EXTRA_NAME_ARTIST,
-						prefs.getBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST, false));
-				if (prefs.getBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT, false)) {
-					args.putString(Constants.INTENT_EXTRA_NAME_CHILD_ID, lastDirectoryId);
-				}
-				currentFragment.setArguments(args);
 				MenuItem item = drawerList.getMenu().findItem(lastSelectedPosition);
 				if (item != null) {
 					item.setChecked(true);
@@ -236,6 +225,10 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 
 			currentFragment.setPrimaryFragment(true);
 			getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, currentFragment, currentFragment.getSupportTag() + "").commit();
+
+			for (SubsonicFragment directory : restoredDirectories) {
+				replaceFragment(directory, directory.getSupportTag());
+			}
 
 			if(getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_QUERY) != null) {
 				SearchFragment fragment = new SearchFragment();
@@ -440,6 +433,55 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 				}.execute();
 			}
 		});
+	}
+
+	private List<SubsonicFragment> readRememberedDirectories(SharedPreferences prefs) {
+		List<SubsonicFragment> fragments = new ArrayList<SubsonicFragment>();
+		String stored = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_PATH, null);
+		if (stored == null) {
+			return fragments;
+		}
+
+		try {
+			JSONArray path = new JSONArray(stored);
+			for (int i = 0; i < path.length(); i++) {
+				JSONObject entry = path.getJSONObject(i);
+				String type = entry.optString("type", "directory");
+				Bundle args = new Bundle();
+				SubsonicFragment fragment;
+				if ("folder".equals(type)) {
+					Util.setSelectedMusicFolderId(this, entry.getString("folderId"));
+					args.putBoolean("showArtists", true);
+					args.putString("folderTitle", entry.getString("name"));
+					fragment = new SelectArtistFragment();
+				} else if ("artist".equals(type)) {
+					String id = entry.getString("id");
+					String name = entry.getString("name");
+					args.putString(Constants.INTENT_EXTRA_NAME_ID, id);
+					args.putString(Constants.INTENT_EXTRA_NAME_NAME, name);
+					args.putBoolean(Constants.INTENT_EXTRA_NAME_ARTIST, true);
+					if (ServerInfo.checkServerVersion(this, "1.13") && !Util.isOffline(this)) {
+						args.putSerializable(Constants.INTENT_EXTRA_NAME_DIRECTORY, new MusicDirectory.Entry(new Artist(id, name)));
+					}
+					fragment = new SelectArtistFragment();
+				} else {
+					String id = entry.getString("id");
+					args.putString(Constants.INTENT_EXTRA_NAME_ID, id);
+					args.putString(Constants.INTENT_EXTRA_NAME_NAME, entry.getString("name"));
+					args.putBoolean(Constants.INTENT_EXTRA_NAME_ARTIST, entry.optBoolean("artist"));
+					if (entry.optBoolean("lookupParent")) {
+						args.putString(Constants.INTENT_EXTRA_NAME_CHILD_ID, id);
+					}
+					fragment = new SelectDirectoryFragment();
+				}
+				fragment.setArguments(args);
+				fragments.add(fragment);
+			}
+		} catch (JSONException e) {
+			prefs.edit().remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_PATH).apply();
+			fragments.clear();
+		}
+		return fragments;
 	}
 
 	private boolean hasExplicitDestinationIntent() {
@@ -818,6 +860,26 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 	public void closeNowPlaying() {
 		slideUpPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 		isPanelClosing = true;
+	}
+
+	@Override
+	protected String getRootFragmentType(SubsonicFragment fragment) {
+		if(fragment instanceof SelectArtistFragment) {
+			return "Artist";
+		} else if(fragment instanceof SelectPlaylistFragment) {
+			return "Playlist";
+		} else if(fragment instanceof SelectPodcastsFragment) {
+			return "Podcast";
+		} else if(fragment instanceof SelectBookmarkFragment) {
+			return "Bookmark";
+		} else if(fragment instanceof SelectShareFragment) {
+			return "Share";
+		} else if(fragment instanceof DownloadFragment) {
+			return "Download";
+		} else if(fragment instanceof MainFragment) {
+			return "Home";
+		}
+		return null;
 	}
 
 	private SubsonicFragment getNewFragment(String fragmentType) {

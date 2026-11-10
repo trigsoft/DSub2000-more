@@ -18,6 +18,7 @@
  */
 package github.paroj.dsub2000.fragments;
 
+import org.json.JSONObject;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
@@ -519,6 +520,11 @@ public class SubsonicFragment extends Fragment implements SwipeRefreshLayout.OnR
 
 	public void setSupportTag(int tag) { this.tag = tag; }
 	public void setSupportTag(String tag) { this.tag = Integer.parseInt(tag); }
+	// Describes this page so it can be restored after a restart; null if it can't be restored
+	public JSONObject getRememberedEntry(Context ctx) {
+		return null;
+	}
+
 	public int getSupportTag() {
 		return tag;
 	}

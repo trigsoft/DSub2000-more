@@ -6,7 +6,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.net.Uri;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -408,35 +411,44 @@ public class SelectDirectoryFragment extends SubsonicFragment implements Section
 		return albumListType != null;
 	}
 
-	private boolean isRememberableDirectory() {
-		return id != null && name != null && playlistId == null && podcastId == null && share == null
-				&& albumListType == null && !showAll && !topTracks && lookupEntry == null;
+	// Reads the arguments rather than parsed fields, which stay unset until the view is created
+	// (e.g. for restored parents) and can be modified by loading.
+	@Override
+	public JSONObject getRememberedEntry(Context ctx) {
+		Bundle args = getArguments();
+		if (args == null) {
+			return null;
+		}
+		String childId = args.getString(Constants.INTENT_EXTRA_NAME_CHILD_ID);
+		String entryId = childId != null ? childId : args.getString(Constants.INTENT_EXTRA_NAME_ID);
+		String entryName = args.getString(Constants.INTENT_EXTRA_NAME_NAME);
+		if (entryId == null || entryName == null
+				|| args.getString(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID) != null
+				|| args.getString(Constants.INTENT_EXTRA_NAME_PODCAST_ID) != null
+				|| args.getSerializable(Constants.INTENT_EXTRA_NAME_SHARE) != null
+				|| args.getString(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE) != null
+				|| args.getBoolean(Constants.INTENT_EXTRA_SHOW_ALL)
+				|| args.getBoolean(Constants.INTENT_EXTRA_TOP_TRACKS)
+				|| args.getString(Constants.INTENT_EXTRA_SEARCH_SONG) != null) {
+			return null;
+		}
+		try {
+			return new JSONObject()
+					.put("id", entryId)
+					.put("name", entryName)
+					.put("artist", args.getBoolean(Constants.INTENT_EXTRA_NAME_ARTIST, false))
+					.put("lookupParent", childId != null);
+		} catch (JSONException e) {
+			return null;
+		}
 	}
 
 	private void rememberDirectoryIfEnabled() {
-		if (!isRememberableDirectory()
-				|| !Util.getPreferences(context).getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false)) {
-			return;
-		}
-
-		Util.getPreferences(context).edit()
-				.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, id)
-				.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME, name)
-				.putBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST, artist)
-				.putBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT, lookupParent)
-				.apply();
+		context.rememberNavigationPath();
 	}
 
 	private void clearRememberedDirectory() {
-		android.content.SharedPreferences prefs = Util.getPreferences(context);
-		if (id != null && id.equals(prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, null))) {
-			prefs.edit()
-					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID)
-					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME)
-					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST)
-					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT)
-					.apply();
-		}
+		Util.getPreferences(context).edit().remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_PATH).apply();
 	}
 
 	private void load(boolean refresh) {

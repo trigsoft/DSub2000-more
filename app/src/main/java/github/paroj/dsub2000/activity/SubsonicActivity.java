@@ -78,6 +78,9 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.PrintWriter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -1033,6 +1036,47 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 			trans.commit();
 		}
 		recreateSpinner();
+		rememberNavigationPath();
+	}
+	public void rememberNavigationPath() {
+		SharedPreferences prefs = Util.getPreferences(this);
+		if (!prefs.getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false)) {
+			return;
+		}
+
+		List<SubsonicFragment> chain = new ArrayList<SubsonicFragment>(backStack);
+		chain.add(currentFragment);
+
+		// Only the trailing run of restorable fragments is kept
+		JSONArray path = new JSONArray();
+		for (SubsonicFragment fragment : chain) {
+			JSONObject entry = fragment.getRememberedEntry(this);
+			if (entry == null) {
+				path = new JSONArray();
+			} else {
+				path.put(entry);
+			}
+		}
+
+		String rootType = getRootFragmentType(chain.get(0));
+
+		SharedPreferences.Editor editor = prefs.edit();
+		if (path.length() == 0) {
+			editor.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_PATH);
+			editor.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ROOT);
+		} else {
+			editor.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_PATH, path.toString());
+			if (rootType != null) {
+				editor.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ROOT, rootType);
+			} else {
+				editor.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ROOT);
+			}
+		}
+		editor.apply();
+	}
+
+	protected String getRootFragmentType(SubsonicFragment fragment) {
+		return null;
 	}
 	public void replaceExistingFragment(SubsonicFragment fragment, int tag) {
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();

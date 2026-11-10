@@ -4,16 +4,20 @@
 			  android:orientation="horizontal"
 			  android:layout_width="fill_parent"
 			  android:layout_height="wrap_content"
+			  android:paddingLeft="16dp"
+			  android:paddingRight="16dp"
 			  android:background="?attr/selectableItemBackground">
 
 	<RelativeLayout
-		android:layout_width="@dimen/AlbumArt.Small"
-		android:layout_height="@dimen/AlbumArt.Small">
+		android:layout_width="@dimen/AlbumArt.ListItem"
+		android:layout_height="wrap_content"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp">
 
 		<github.paroj.dsub2000.view.RecyclingImageView
 			android:id="@+id/album_coverart"
-			android:layout_width="@dimen/AlbumArt.Small"
-			android:layout_height="@dimen/AlbumArt.Small"
+			android:layout_width="@dimen/AlbumArt.ListItem"
+			android:layout_height="@dimen/AlbumArt.ListItem"
 			android:layout_gravity="left|center_vertical"/>
 
 		<RatingBar
@@ -44,7 +48,8 @@
 			android:textAppearance="?android:attr/textAppearanceMedium"
 			android:singleLine="true"
 			android:ellipsize="marquee"
-			android:paddingBottom="6dip"
+			android:includeFontPadding="false"
+			android:paddingBottom="2dip"
 			android:textColor="?android:textColorPrimary"/>
 
 		<TextView
@@ -52,6 +57,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textAppearance="?android:attr/textAppearanceSmall"
+			android:textSize="12sp"
+			android:includeFontPadding="false"
 			android:singleLine="true"
 			android:textColor="?android:textColorSecondary"/>
 
