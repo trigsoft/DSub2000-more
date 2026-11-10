@@ -27,6 +27,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.util.TypedValue;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -103,6 +106,8 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 	private Toolbar mainToolbar;
 	private Toolbar nowPlayingToolbar;
     private FrameLayout slideUpSwipeTarget;
+	private View playerSheetHandle;
+	private ColorDrawable collapsedBarBackground;
 	private View bottomBar;
 	private ImageView coverArtView;
 	private TextView trackView;
@@ -267,6 +272,7 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		bottomBar = findViewById(R.id.bottom_bar);
 		mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 		nowPlayingToolbar = (Toolbar) findViewById(R.id.now_playing_toolbar);
+		playerSheetHandle = findViewById(R.id.player_sheet_handle);
 		coverArtView = (ImageView) bottomBar.findViewById(R.id.album_art);
 		trackView = (TextView) bottomBar.findViewById(R.id.track_name);
 		artistView = (TextView) bottomBar.findViewById(R.id.artist_name);
@@ -278,12 +284,25 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
             if (mainToolbarColor != -1) {
                 mainToolbar.setBackgroundColor(mainToolbarColor);
             }
-            int nowPlayingToolbarColor = prefs.getInt(Constants.PREFERENCES_KEY_ACTION_BAR_NOW_PLAYING_COLOR, -1);
-            if (nowPlayingToolbarColor != -1) {
-                nowPlayingToolbar.setBackgroundColor(nowPlayingToolbarColor);
-                slideUpSwipeTarget.setBackgroundColor(nowPlayingToolbarColor);
-            }
         }
+		// The collapsed bar keeps the plain bar colour, which fades out over the player background when expanding.
+		TypedValue barColorValue = new TypedValue();
+		getTheme().resolveAttribute(R.attr.actionbarNowPlayingBackgroundColor, barColorValue, true);
+		int barColor = barColorValue.resourceId != 0 ? getResources().getColor(barColorValue.resourceId) : barColorValue.data;
+		if (prefs.getBoolean(Constants.PREFERENCES_KEY_COLOR_ACTION_BAR, true)) {
+			int nowPlayingToolbarColor = prefs.getInt(Constants.PREFERENCES_KEY_ACTION_BAR_NOW_PLAYING_COLOR, -1);
+			if (nowPlayingToolbarColor != -1) {
+				barColor = nowPlayingToolbarColor;
+			}
+		}
+		// A transparent bar colour showed the page behind the bar, which the player gradient now sits in front of.
+		if (Color.alpha(barColor) == 0) {
+			TypedValue backgroundValue = new TypedValue();
+			getTheme().resolveAttribute(android.R.attr.colorBackground, backgroundValue, true);
+			barColor = backgroundValue.resourceId != 0 ? getResources().getColor(backgroundValue.resourceId) : backgroundValue.data;
+		}
+		collapsedBarBackground = new ColorDrawable(barColor);
+		slideUpSwipeTarget.setBackground(collapsedBarBackground);
 		setSupportActionBar(mainToolbar);
 
 		if (findViewById(R.id.fragment_container) != null && savedInstanceState == null) {
@@ -661,10 +680,16 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 	private void updateBarFade(float slideOffset) {
 		float barAlpha = Math.max(0f, 1f - slideOffset * 2f);
 		float toolbarAlpha = Math.max(0f, slideOffset * 2f - 1f);
+		if(collapsedBarBackground != null) {
+			collapsedBarBackground.setAlpha(Math.round(barAlpha * 255));
+		}
 		bottomBar.setAlpha(barAlpha);
 		bottomBar.setVisibility(barAlpha > 0f ? View.VISIBLE : View.INVISIBLE);
 		nowPlayingToolbar.setAlpha(toolbarAlpha);
 		nowPlayingToolbar.setVisibility(toolbarAlpha > 0f ? View.VISIBLE : View.INVISIBLE);
+		if(playerSheetHandle != null) {
+			playerSheetHandle.setVisibility(slideOffset > 0.5f ? View.VISIBLE : View.INVISIBLE);
+		}
 	}
 
 	private void showNowPlayingToolbar() {
@@ -679,11 +704,12 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 
 		if(secondaryFragment == null) {
 			nowPlayingFragment.setPrimaryFragment(true);
+			nowPlayingToolbar.setNavigationIcon(null);
+			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		} else {
 			secondaryFragment.setPrimaryFragment(true);
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		}
-
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	private void showMainToolbar() {
@@ -699,6 +725,14 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		}
 		setSupportActionBar(mainToolbar);
 		recreateSpinner();
+
+		// The fresh action bar starts without the up arrow even though the drawer toggle is already in back mode.
+		if(drawerToggle != null && !backStack.isEmpty()) {
+			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+			drawerToggle.setDrawerIndicatorEnabled(false);
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			drawerToggle.syncState();
+		}
 	}
 
 	@Override

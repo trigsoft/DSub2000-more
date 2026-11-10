@@ -11,25 +11,28 @@
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
 
+		<View
+			android:id="@+id/download_top_spacer"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"/>
+
 		<ViewFlipper
 			android:id="@+id/download_playlist_flipper"
 			android:layout_width="fill_parent"
-			android:layout_height="0dip"
-			android:layout_weight="1">
+			android:layout_height="wrap_content">
 
 			<LinearLayout
 				android:id="@+id/download_album_art_layout"
 				android:orientation="vertical"
 				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
+				android:layout_height="wrap_content"
 				android:background="@android:color/transparent">
 
 				<FrameLayout
 					android:id="@+id/download_cover_stage"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
-					android:layout_weight="1"
-					android:layout_marginBottom="24dp">
+					android:layout_marginBottom="18dp">
 
 					<FrameLayout
 						android:id="@+id/download_cover_container"
@@ -120,16 +123,24 @@
 					android:textColor="?android:textColorPrimary"/>
 			</LinearLayout>
 
-			<include layout="@layout/download_playlist"/>
+			<include
+				layout="@layout/download_playlist"
+				android:layout_height="0dp"/>
 
 		</ViewFlipper>
 
 		<include
 			layout="@layout/download_media_buttons"
+			android:id="@+id/download_media_buttons_wrapper"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="16dp"/>
 
 		<include layout="@layout/download_slider"/>
+
+		<View
+			android:id="@+id/download_bottom_spacer"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"/>
 	</LinearLayout>
 </FrameLayout>

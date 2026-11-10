@@ -552,6 +552,7 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 		final View mainToolbar = findViewById(R.id.main_toolbar);
 		final View nowPlayingToolbar = findViewById(R.id.now_playing_toolbar);
 		final View swipeTarget = findViewById(R.id.slide_up_swipe_target);
+		final View slideUpFrame = findViewById(R.id.slide_up_frame);
 		final View nowPlayingContainer = findViewById(R.id.now_playing_fragment_container);
 		final View contentRoot = findViewById(R.id.fragment_container_wrapper);
 		final View contentContainer = contentRoot != null ? contentRoot : findViewById(R.id.fragment_container);
@@ -562,6 +563,7 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 		final int panelHeight = panel instanceof SlidingUpPanelLayout ? ((SlidingUpPanelLayout) panel).getPanelHeight() : 0;
 		final int mainToolbarHeight = mainToolbar == null ? 0 : mainToolbar.getLayoutParams().height;
 		final int nowPlayingToolbarHeight = nowPlayingToolbar == null ? 0 : nowPlayingToolbar.getLayoutParams().height;
+		final int slideUpFrameTopMargin = slideUpFrame == null ? 0 : ((ViewGroup.MarginLayoutParams) slideUpFrame.getLayoutParams()).topMargin;
 		final int headerHeight = header == null ? 0 : header.getLayoutParams().height;
 		// The content is placed below the toolbar with a margin, which has to follow the toolbar height.
 		final ViewGroup.MarginLayoutParams contentParams = contentContainer == null ? null : (ViewGroup.MarginLayoutParams) contentContainer.getLayoutParams();
@@ -588,11 +590,16 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 				mainToolbar.setLayoutParams(params);
 			}
 			if(nowPlayingToolbar != null) {
-				// The swipe target it sits in already keeps it clear of the bars on the sides.
+				// The player sheet starts below the status bar, so its toolbar needs no extra top inset.
 				ViewGroup.LayoutParams params = nowPlayingToolbar.getLayoutParams();
-				params.height = nowPlayingToolbarHeight + bars.top;
-				nowPlayingToolbar.setPadding(nowPlayingToolbarPadding.left, nowPlayingToolbarPadding.top + bars.top, nowPlayingToolbarPadding.right, nowPlayingToolbarPadding.bottom);
+				params.height = nowPlayingToolbarHeight;
+				nowPlayingToolbar.setPadding(nowPlayingToolbarPadding.left, nowPlayingToolbarPadding.top, nowPlayingToolbarPadding.right, nowPlayingToolbarPadding.bottom);
 				nowPlayingToolbar.setLayoutParams(params);
+			}
+			if(slideUpFrame != null) {
+				ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) slideUpFrame.getLayoutParams();
+				params.topMargin = slideUpFrameTopMargin + bars.top;
+				slideUpFrame.setLayoutParams(params);
 			}
 			if(contentContainer != null) {
 				contentContainer.setPadding(contentPadding.left + bars.left, contentPadding.top, contentPadding.right + bars.right, contentPadding.bottom);
