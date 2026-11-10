@@ -246,6 +246,9 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		setupLayoutManager(playlistView, false);
 		ItemTouchHelper touchHelper = new ItemTouchHelper(new DownloadFileItemHelperCallback(this, true));
 		touchHelper.attachToRecyclerView(playlistView);
+		if(context instanceof github.paroj.dsub2000.activity.SubsonicFragmentActivity) {
+			((github.paroj.dsub2000.activity.SubsonicFragmentActivity) context).setPanelScrollableView(playlistView);
+		}
 
 		starButton = (ImageButton)rootView.findViewById(R.id.download_star);
 		if(MenuUtil.showSongStar(Util.getPreferences(context))) {

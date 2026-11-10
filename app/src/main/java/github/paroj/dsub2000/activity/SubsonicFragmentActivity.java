@@ -752,6 +752,11 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		getSupportActionBar().setDisplayHomeAsUpEnabled(!backStack.isEmpty());
 	}
 
+	// The whole sheet drags; the queue only hands over the gesture once it is scrolled to the top.
+	public void setPanelScrollableView(View view) {
+		slideUpPanel.setScrollableView(view);
+	}
+
 	@Override
 	public void openNowPlaying() {
 		slideUpPanel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
