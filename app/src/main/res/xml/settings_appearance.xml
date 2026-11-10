@@ -87,6 +87,12 @@
 			android:summary="@string/settings.large_album_art_summary"
 			android:key="largeAlbumArt"
 			android:defaultValue="true"/>
+
+		<github.paroj.dsub2000.view.MaterialSwitchPreference
+			android:title="@string/settings.remember_last_directory"
+			android:summary="@string/settings.remember_last_directory_summary"
+			android:key="rememberLastDirectory"
+			android:defaultValue="false"/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

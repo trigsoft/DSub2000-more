@@ -180,6 +180,8 @@ public class SelectDirectoryFragment extends SubsonicFragment implements Section
 				lookupParent = true;
 			}
 
+			rememberDirectoryIfEnabled();
+
             if(albums == null) {
                 albums = new ArrayList<Entry>();
             }
@@ -404,6 +406,37 @@ public class SelectDirectoryFragment extends SubsonicFragment implements Section
 	@Override
 	protected boolean isShowArtistEnabled() {
 		return albumListType != null;
+	}
+
+	private boolean isRememberableDirectory() {
+		return id != null && name != null && playlistId == null && podcastId == null && share == null
+				&& albumListType == null && !showAll && !topTracks && lookupEntry == null;
+	}
+
+	private void rememberDirectoryIfEnabled() {
+		if (!isRememberableDirectory()
+				|| !Util.getPreferences(context).getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false)) {
+			return;
+		}
+
+		Util.getPreferences(context).edit()
+				.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, id)
+				.putString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME, name)
+				.putBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST, artist)
+				.putBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT, lookupParent)
+				.apply();
+	}
+
+	private void clearRememberedDirectory() {
+		android.content.SharedPreferences prefs = Util.getPreferences(context);
+		if (id != null && id.equals(prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, null))) {
+			prefs.edit()
+					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID)
+					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME)
+					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST)
+					.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT)
+					.apply();
+		}
 	}
 
 	private void load(boolean refresh) {
@@ -639,6 +672,12 @@ public class SelectDirectoryFragment extends SubsonicFragment implements Section
 			this.refresh = refresh;
 
 			currentTask = this;
+		}
+
+		@Override
+		protected void error(Throwable error) {
+			clearRememberedDirectory();
+			super.error(error);
 		}
 
 		protected abstract MusicDirectory load(MusicService service) throws Exception;

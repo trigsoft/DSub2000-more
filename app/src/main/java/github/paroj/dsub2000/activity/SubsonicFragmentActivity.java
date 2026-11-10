@@ -172,6 +172,21 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 		setContentView(R.layout.abstract_fragment_activity);
 
 		if (findViewById(R.id.fragment_container) != null && savedInstanceState == null) {
+			boolean restoreLastDirectory = !hasExplicitDestinationIntent()
+					&& Util.getPreferences(this).getBoolean(Constants.PREFERENCES_KEY_REMEMBER_LAST_DIRECTORY, false);
+			SharedPreferences prefs = Util.getPreferences(this);
+			String lastDirectoryId = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID, null);
+			String lastDirectoryName = prefs.getString(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME, null);
+			restoreLastDirectory = restoreLastDirectory && lastDirectoryId != null && lastDirectoryName != null;
+			if (!restoreLastDirectory && (lastDirectoryId == null || lastDirectoryName == null)) {
+				prefs.edit()
+						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ID)
+						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_NAME)
+						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST)
+						.remove(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT)
+						.apply();
+			}
+
 			String fragmentType = getIntent().getStringExtra(Constants.INTENT_EXTRA_FRAGMENT_TYPE);
 			if(fragmentType == null) {
 				fragmentType = Util.openToTab(this);
@@ -190,7 +205,26 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 				lastSelectedPosition = getDrawerItemId(fragmentType);
 			}
 
-			currentFragment = getNewFragment(fragmentType);
+			if (restoreLastDirectory) {
+				fragmentType = "Artist";
+				lastSelectedPosition = R.id.drawer_library;
+			}
+			currentFragment = restoreLastDirectory ? new SelectDirectoryFragment() : getNewFragment(fragmentType);
+			if (restoreLastDirectory) {
+				Bundle args = new Bundle();
+				args.putString(Constants.INTENT_EXTRA_NAME_ID, lastDirectoryId);
+				args.putString(Constants.INTENT_EXTRA_NAME_NAME, lastDirectoryName);
+				args.putBoolean(Constants.INTENT_EXTRA_NAME_ARTIST,
+						prefs.getBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_ARTIST, false));
+				if (prefs.getBoolean(Constants.PREFERENCES_KEY_LAST_DIRECTORY_LOOKUP_PARENT, false)) {
+					args.putString(Constants.INTENT_EXTRA_NAME_CHILD_ID, lastDirectoryId);
+				}
+				currentFragment.setArguments(args);
+				MenuItem item = drawerList.getMenu().findItem(lastSelectedPosition);
+				if (item != null) {
+					item.setChecked(true);
+				}
+			}
 			if(getIntent().hasExtra(Constants.INTENT_EXTRA_NAME_ID)) {
 				Bundle currentArguments = currentFragment.getArguments();
 				if(currentArguments == null) {
@@ -199,6 +233,7 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 				currentArguments.putString(Constants.INTENT_EXTRA_NAME_ID, getIntent().getStringExtra(Constants.INTENT_EXTRA_NAME_ID));
 				currentFragment.setArguments(currentArguments);
 			}
+
 			currentFragment.setPrimaryFragment(true);
 			getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, currentFragment, currentFragment.getSupportTag() + "").commit();
 
@@ -405,6 +440,24 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 				}.execute();
 			}
 		});
+	}
+
+	private boolean hasExplicitDestinationIntent() {
+		Intent intent = getIntent();
+		return intent.hasExtra(Constants.INTENT_EXTRA_FRAGMENT_TYPE)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_ID)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_QUERY)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_ALBUM_LIST_TYPE)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_PLAYLIST_ID)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_PODCAST_ID)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_SHARE)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_VIEW_ALBUM)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_DOWNLOAD_VIEW)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_DOWNLOAD)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_TOP_TRACKS)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_SHOW_ALL)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_REQUEST_SEARCH)
+				|| intent.hasExtra(Constants.INTENT_EXTRA_NAME_EXIT);
 	}
 
 	@Override
