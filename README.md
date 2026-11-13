@@ -48,6 +48,8 @@ changes in this fork.
 * Gapless Playback
 * Highly customizable UI
 * User defined Cache Size, Network Timeout, and Buffer Length
+* Optionally reopen the last browsed directory (full navigation path) on launch
+* Playing-track marker in song lists updates immediately when the track changes
 
 ## Permissions
 

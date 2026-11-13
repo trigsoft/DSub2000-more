@@ -92,6 +92,7 @@ import github.paroj.dsub2000.util.SilentBackgroundTask;
 import github.paroj.dsub2000.util.UserUtil;
 import github.paroj.dsub2000.util.Util;
 import github.paroj.dsub2000.view.ChangeLog;
+import github.paroj.dsub2000.view.UpdateView;
 
 /**
  * Created by Scott on 10/14/13.
@@ -1170,6 +1171,8 @@ public class SubsonicFragmentActivity extends SubsonicActivity implements Downlo
 	@Override
 	public void onSongChanged(DownloadFile currentPlaying, int currentPlayingIndex, boolean shouldFastForward) {
 		this.currentPlaying = currentPlaying;
+		// Refresh the playing marker of visible song rows right away instead of waiting for the next poll
+		UpdateView.triggerUpdate();
 
 		MusicDirectory.Entry song = null;
 		if (currentPlaying != null) {
