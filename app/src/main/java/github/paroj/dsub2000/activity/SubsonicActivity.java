@@ -82,6 +82,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import github.paroj.dsub2000.R;
@@ -297,6 +298,12 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 
 		// Sync the toggle state after onRestoreInstanceState has occurred.
 		if(drawerToggle != null) {
+			// Directories restored on launch are pushed before the title is known, so the toggle is still in drawer mode.
+			if(!backStack.isEmpty() && isDrawerToggleActive() && drawerToggle.isDrawerIndicatorEnabled()) {
+				getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+				drawerToggle.setDrawerIndicatorEnabled(false);
+				getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			}
 			drawerToggle.syncState();
 		}
 	}
@@ -1046,6 +1053,10 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 
 		List<SubsonicFragment> chain = new ArrayList<SubsonicFragment>(backStack);
 		chain.add(currentFragment);
+		chain.removeAll(Collections.singleton(null));
+		if (chain.isEmpty()) {
+			return;
+		}
 
 		// Only the trailing run of restorable fragments is kept
 		JSONArray path = new JSONArray();
