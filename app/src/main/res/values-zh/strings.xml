@@ -512,6 +512,7 @@
     <string name="settings.sync_interval_720">12小时</string>
     <string name="settings.sync_most_recent">同步最近添加</string>
     <string name="settings.sync_most_recent_summary">自动缓存新添加的专辑</string>
+    <string name="settings.lockscreen_notification">在锁屏上显示</string>
     <string name="settings.sync_notification">显示同步通知</string>
     <string name="settings.sync_notification_summary">同步新媒体后显示通知</string>
     <string name="settings.sync_starred">同步收藏</string>

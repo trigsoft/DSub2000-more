@@ -136,6 +136,7 @@ public final class Constants {
 	public static final String PREFERENCES_KEY_SYNC_ENABLED = "syncEnabled";
 	public static final String PREFERENCES_KEY_SYNC_INTERVAL = "syncInterval";
 	public static final String PREFERENCES_KEY_SYNC_WIFI = "syncWifi";
+	public static final String PREFERENCES_KEY_LOCKSCREEN_NOTIFICATION = "lockscreenNotification";
 	public static final String PREFERENCES_KEY_SYNC_NOTIFICATION = "syncNotification";
 	public static final String PREFERENCES_KEY_SYNC_STARRED = "syncStarred";
 	public static final String PREFERENCES_KEY_SYNC_MOST_RECENT = "syncMostRecent";

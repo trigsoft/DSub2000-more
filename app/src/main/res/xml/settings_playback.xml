@@ -75,6 +75,11 @@
             android:key="combineThumbsUpDown"
             android:defaultValue="false"/>
 
+        <github.paroj.dsub2000.view.MaterialSwitchPreference
+            android:title="@string/settings.lockscreen_notification"
+            android:key="lockscreenNotification"
+            android:defaultValue="true"/>
+
         <ListPreference
             android:title="@string/settings.controls_auto_hide_delay"
             android:summary="@string/settings.controls_auto_hide_delay_summary"

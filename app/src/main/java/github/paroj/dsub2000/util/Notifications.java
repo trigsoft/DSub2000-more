@@ -86,7 +86,7 @@ public final class Notifications {
 			.setSmallIcon(R.drawable.stat_notify_playing)
 			.setContentTitle(title)
 			.setContentText(artist + " - " + album)
-			.setVisibility(Notification.VISIBILITY_PUBLIC)
+			.setVisibility(Util.getPreferences(context).getBoolean(Constants.PREFERENCES_KEY_LOCKSCREEN_NOTIFICATION, true) ? Notification.VISIBILITY_PUBLIC : Notification.VISIBILITY_SECRET)
 			.setStyle(mediaStyle);
 
 		// Set the album art.

@@ -44,7 +44,7 @@ changes in this fork.
 
 * Drag and drop songs to rearrange your playlist on the Now Playing tab
 * Pause playback when other apps request audio focus (navigation, etc)
-* Lockscreen controls
+* Lockscreen controls (can be turned off in Settings → Playback)
 * Gapless Playback
 * Highly customizable UI
 * User defined Cache Size, Network Timeout, and Buffer Length

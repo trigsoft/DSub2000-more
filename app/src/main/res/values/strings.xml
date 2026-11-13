@@ -456,6 +456,7 @@
 	<string name="settings.sync_starred_summary">Automatically cache songs, albums, and artists which are starred</string>
 	<string name="settings.sync_library">Cache Entire Library</string>
 	<string name="settings.sync_library_summary">Automatically cache every song in the library and keep the cache in sync with the server. Uses significant storage and bandwidth.</string>
+	<string name="settings.lockscreen_notification">Show on lock screen</string>
 	<string name="settings.sync_notification">Show Sync Notification</string>
 	<string name="settings.sync_notification_summary">Show a notification after new media has been synced</string>
 	<string name="settings.menu_options.title">Optional Menu Options</string>
