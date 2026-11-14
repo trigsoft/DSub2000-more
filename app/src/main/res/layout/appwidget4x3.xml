@@ -112,6 +112,14 @@
                 android:layout_weight="1"
                 android:src="@drawable/widget_media_forward"
 				style="@style/NotificationButton" />
+
+            <ImageButton
+                android:id="@+id/control_star"
+                android:layout_width="0dip"
+                android:layout_height="56dip"
+                android:layout_weight="1"
+                android:src="@drawable/widget_star"
+				style="@style/NotificationButton" />
         </LinearLayout>
 
     </LinearLayout>

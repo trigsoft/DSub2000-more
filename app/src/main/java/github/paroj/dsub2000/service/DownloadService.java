@@ -51,6 +51,7 @@ import github.paroj.dsub2000.util.Constants;
 import github.paroj.dsub2000.util.MediaRouteManager;
 import github.paroj.dsub2000.util.ShufflePlayBuffer;
 import github.paroj.dsub2000.util.SimpleServiceBinder;
+import github.paroj.dsub2000.provider.DSubWidgetProvider;
 import github.paroj.dsub2000.util.UpdateHelper;
 import github.paroj.dsub2000.util.Util;
 import github.paroj.dsub2000.util.compat.RemoteControlClientLP;
@@ -111,6 +112,7 @@ public class DownloadService extends MediaLibraryService {
 	public static final String CMD_STOP = "github.paroj.dsub2000.CMD_STOP";
 	public static final String CMD_PREVIOUS = "github.paroj.dsub2000.CMD_PREVIOUS";
 	public static final String CMD_NEXT = "github.paroj.dsub2000.CMD_NEXT";
+	public static final String CMD_STAR = "github.paroj.dsub2000.CMD_STAR";
 	public static final String CANCEL_DOWNLOADS = "github.paroj.dsub2000.CANCEL_DOWNLOADS";
 	public static final String START_PLAY = "github.paroj.dsub2000.START_PLAYING";
 	private static final long DEFAULT_DELAY_UPDATE_PROGRESS = 1000L;
@@ -2691,6 +2693,7 @@ public class DownloadService extends MediaLibraryService {
 			public void starChange(boolean starred) {
 				if(currentPlaying == DownloadService.this.currentPlaying) {
 					onMetadataUpdate(METADATA_UPDATED_STAR);
+					DSubWidgetProvider.notifyInstances(DownloadService.this, DownloadService.this, playerState == STARTED);
 				}
 			}
 

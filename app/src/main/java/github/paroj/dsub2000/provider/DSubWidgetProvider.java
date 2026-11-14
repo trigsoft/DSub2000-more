@@ -219,6 +219,13 @@ public class DSubWidgetProvider extends AppWidgetProvider {
             views.setImageViewResource(R.id.control_play, R.drawable.widget_media_start);
         }
 
+        if (currentPlaying == null) {
+            views.setViewVisibility(R.id.control_star, View.INVISIBLE);
+        } else {
+            views.setViewVisibility(R.id.control_star, View.VISIBLE);
+            views.setImageViewResource(R.id.control_star, currentPlaying.isStarred() ? R.drawable.widget_star_filled : R.drawable.widget_star);
+        }
+
         // Set the cover art
         try {
             boolean large = false;
@@ -312,5 +319,14 @@ public class DSubWidgetProvider extends AppWidgetProvider {
         else
             pendingIntent = PendingIntent.getService(context, 0, intent, /* flags */ PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.control_previous, pendingIntent);
+
+        intent = new Intent("DSub.STAR");
+        intent.setComponent(new ComponentName(context, DownloadService.class));
+        intent.setAction(DownloadService.CMD_STAR);
+        if (Build.VERSION.SDK_INT >= 26)
+            pendingIntent = PendingIntent.getForegroundService(context, 0, intent, /* flags */ PendingIntent.FLAG_IMMUTABLE);
+        else
+            pendingIntent = PendingIntent.getService(context, 0, intent, /* flags */ PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.control_star, pendingIntent);
     }
 }

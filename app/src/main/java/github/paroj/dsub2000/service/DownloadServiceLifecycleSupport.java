@@ -93,6 +93,8 @@ public class DownloadServiceLifecycleSupport {
 						downloadService.previous();
 					} else if (DownloadService.CMD_TOGGLEPAUSE.equals(action)) {
 						downloadService.togglePlayPause();
+					} else if (DownloadService.CMD_STAR.equals(action)) {
+						downloadService.toggleStarred();
 					} else if (DownloadService.CMD_PAUSE.equals(action)) {
 						downloadService.pause();
 					} else if (DownloadService.CMD_STOP.equals(action)) {
@@ -173,6 +175,7 @@ public class DownloadServiceLifecycleSupport {
 		commandFilter.addAction(DownloadService.CMD_STOP);
 		commandFilter.addAction(DownloadService.CMD_PREVIOUS);
 		commandFilter.addAction(DownloadService.CMD_NEXT);
+		commandFilter.addAction(DownloadService.CMD_STAR);
 		commandFilter.addAction(DownloadService.CANCEL_DOWNLOADS);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             downloadService.registerReceiver(intentReceiver, commandFilter, RECEIVER_EXPORTED);
@@ -244,6 +247,8 @@ public class DownloadServiceLifecycleSupport {
 						}
 					} else if(DownloadService.CMD_TOGGLEPAUSE.equals(action)) {
 						downloadService.togglePlayPause();
+					} else if(DownloadService.CMD_STAR.equals(action)) {
+						downloadService.toggleStarred();
 					} else if(DownloadService.CMD_NEXT.equals(action)) {
 						downloadService.next();
 					} else if(DownloadService.CMD_PREVIOUS.equals(action)) {
