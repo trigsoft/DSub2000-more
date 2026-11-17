@@ -12,6 +12,7 @@ It retains the upstream settings back-navigation behavior and adds:
 * Coalescing of pending remote playback-state updates so the latest state is sent
 * A music-library folder list with an all-folders option, plus metadata-based album detail pages
 * Separate song and album menu visibility settings, and a responsive artwork-focused player
+* An Amperfy-style thumbless progress slider with a larger touch area that enlarges while dragging
 * Themed list separators, shadow-free toolbars, and single-line truncated list names
 
 Subsonic is a cross-platform FOSS media server that's capable of indexing very

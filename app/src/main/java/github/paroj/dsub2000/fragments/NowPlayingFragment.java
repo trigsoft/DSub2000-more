@@ -28,6 +28,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.animation.ValueAnimator;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -487,6 +488,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		progressBar.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
 			@Override
 			public void onStopTrackingTouch(final Slider slider) {
+				animateTrackHeight(slider, false);
 				final int seekTo = Sliders.getProgress(slider);
 				new SilentBackgroundTask<Void>(context) {
 					@Override
@@ -504,6 +506,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 
 			@Override
 			public void onStartTrackingTouch(final Slider slider) {
+				animateTrackHeight(slider, true);
 				seekInProgress = true;
 			}
 		});
@@ -515,6 +518,17 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 		});
 
 		return rootView;
+	}
+
+	private void animateTrackHeight(Slider slider, boolean enlarge) {
+		if (slider.getTag(R.id.download_progress_bar) == null) {
+			slider.setTag(R.id.download_progress_bar, slider.getTrackHeight());
+		}
+		int base = (Integer) slider.getTag(R.id.download_progress_bar);
+		ValueAnimator animator = ValueAnimator.ofInt(slider.getTrackHeight(), enlarge ? Math.round(base * 1.5f) : base);
+		animator.setDuration(150);
+		animator.addUpdateListener(a -> slider.setTrackHeight((Integer) a.getAnimatedValue()));
+		animator.start();
 	}
 
 	private void updatePlayerContentPosition() {

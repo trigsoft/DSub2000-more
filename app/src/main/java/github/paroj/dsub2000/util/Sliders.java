@@ -11,8 +11,12 @@ public final class Sliders {
 	}
 
 	public static void setMax(Slider slider, int max) {
+		float to = Math.max(1, max);
+		if (slider.getValue() > to) {
+			slider.setValue(slider.getValueFrom());
+		}
 		slider.setValueFrom(0);
-		slider.setValueTo(Math.max(1, max));
+		slider.setValueTo(to);
 	}
 
 	public static void setProgress(Slider slider, int progress) {

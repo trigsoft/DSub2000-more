@@ -3,6 +3,11 @@
 	<style name="Widget.DSub2000.Slider" parent="Widget.Material3.Slider">
 		<item name="labelBehavior">gone</item>
 		<item name="tickVisible">false</item>
+		<item name="thumbWidth">0dp</item>
+		<item name="thumbTrackGapSize">0dp</item>
+		<item name="trackHeight">12dp</item>
+		<item name="trackStopIndicatorSize">0dp</item>
+		<item name="minTouchTargetSize">64dp</item>
 	</style>
 
 	<!-- Tonal button without a minimum width or side padding, so several share one row on small screens. -->
