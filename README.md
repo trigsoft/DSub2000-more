@@ -51,6 +51,7 @@ changes in this fork.
 * Optionally reopen the last browsed directory (full navigation path) on launch
 * Playing-track marker in song lists updates immediately when the track changes
 * Home screen widgets with playback controls and a star button
+* More transparent cover overlay buttons in the player
 
 ## Permissions
 
