@@ -25,6 +25,57 @@
 				android:layout_height="match_parent"
 				android:scaleType="fitCenter"/>
 		</FrameLayout>
+
+		<LinearLayout
+			android:id="@+id/download_overlay_buttons"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="bottom|center_horizontal"
+			android:layout_marginBottom="16dp"
+			android:orientation="horizontal">
+
+			<ImageButton
+				android:id="@+id/download_rating_bad"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/rating_bad"
+				android:tint="?attr/element_color"/>
+
+			<ImageButton
+				android:id="@+id/download_star"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/star"
+				android:tint="?attr/element_color"/>
+
+			<ImageButton
+				android:id="@+id/download_add_to_playlist"
+				style="@style/DownloadActionImageButton"
+				android:src="@drawable/ic_action_add"
+				android:tint="?attr/element_color" />
+
+			<ImageButton
+				android:id="@+id/download_playback_speed"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/playback_speed"
+				android:tint="?attr/element_color"/>
+
+			<ImageButton
+				android:id="@+id/download_bookmark"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/bookmark"
+				android:tint="?attr/element_color"/>
+
+			<ImageButton
+				android:id="@+id/download_rating_good"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/rating_good"
+				android:tint="?attr/element_color"/>
+
+			<ImageButton
+				android:id="@+id/download_rating_combined"
+				style="@style/DownloadActionImageButton"
+				android:src="?attr/rating_combined"
+				android:tint="?attr/element_color"/>
+		</LinearLayout>
 	</FrameLayout>
 
 	<LinearLayout
@@ -39,67 +90,13 @@
 		<ViewFlipper
 			android:id="@+id/download_playlist_flipper"
 			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
+			android:layout_height="0dp"
+			android:layout_weight="1"
 			android:measureAllChildren="false">
 
-			<RelativeLayout
-				android:id="@+id/download_overlay_buttons"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center_horizontal"
-				android:orientation="vertical">
-
-				<LinearLayout
-					android:id="@+id/download_other_controls_layout"
-					android:orientation="horizontal"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_centerHorizontal="true"
-					android:layout_alignParentBottom="true">
-
-					<ImageButton
-						android:id="@+id/download_rating_bad"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/rating_bad"
-						android:tint="?attr/element_color"/>
-
-					<ImageButton
-						android:id="@+id/download_star"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/star"
-						android:tint="?attr/element_color"/>
-
-					<ImageButton
-						android:id="@+id/download_add_to_playlist"
-						style="@style/DownloadActionImageButton"
-						android:src="@drawable/ic_action_add"
-						android:tint="?attr/element_color" />
-
-					<ImageButton
-						android:id="@+id/download_playback_speed"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/playback_speed"
-						android:tint="?attr/element_color"/>
-
-					<ImageButton
-						android:id="@+id/download_bookmark"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/bookmark"
-						android:tint="?attr/element_color"/>
-
-					<ImageButton
-						android:id="@+id/download_rating_good"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/rating_good"
-						android:tint="?attr/element_color"/>
-
-					<ImageButton
-						android:id="@+id/download_rating_combined"
-						style="@style/DownloadActionImageButton"
-						android:src="?attr/rating_combined"
-						android:tint="?attr/element_color"/>
-				</LinearLayout>
-			</RelativeLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"/>
 
 			<include layout="@layout/download_playlist"/>
 

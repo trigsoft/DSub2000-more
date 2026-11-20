@@ -161,6 +161,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 	private DownloadFileAdapter songListAdapter;
 	private boolean seekInProgress = false;
 	private boolean startFlipped = false;
+	private boolean queueInline = false;
 	private boolean scrollWhenLoaded = false;
 	private int lastY = 0;
 	private int currentPlayingSize = 0;
@@ -220,6 +221,11 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
         }
 
 		playlistFlipper = (ViewFlipper)rootView.findViewById(R.id.download_playlist_flipper);
+		queueInline = getResources().getBoolean(R.bool.player_queue_inline);
+		if(queueInline) {
+			playlistFlipper.setDisplayedChild(1);
+			scrollWhenLoaded = true;
+		}
 		emptyTextView = (TextView)rootView.findViewById(R.id.download_empty);
 		songTitleTextView = (TextView)rootView.findViewById(R.id.download_song_title);
 		positionTextView = (TextView)rootView.findViewById(R.id.download_position);
@@ -1042,7 +1048,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 			}
 			executorService.shutdownNow();
 			executorService = null;
-			playlistFlipper.setDisplayedChild(0);
+			if(!queueInline) playlistFlipper.setDisplayedChild(0);
 		}
 	}
 
@@ -1248,6 +1254,9 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 	}
 
 	private void toggleFullscreenAlbumArt() {
+		if (queueInline) {
+			return;
+		}
 		if (playlistFlipper.getDisplayedChild() == 1) {
 			playlistFlipper.setInAnimation(AnimationUtils.loadAnimation(context, R.anim.push_down_in));
 			playlistFlipper.setOutAnimation(AnimationUtils.loadAnimation(context, R.anim.push_down_out));
@@ -1595,7 +1604,7 @@ public class NowPlayingFragment extends SubsonicFragment implements OnGestureLis
 			toggleListButton.setVisibility(View.GONE);
 			repeatButton.setVisibility(View.GONE);
 		} else {
-			toggleListButton.setVisibility(View.VISIBLE);
+			toggleListButton.setVisibility(queueInline ? View.GONE : View.VISIBLE);
 			repeatButton.setVisibility(View.VISIBLE);
 		}
         setPlaybackSpeed();
