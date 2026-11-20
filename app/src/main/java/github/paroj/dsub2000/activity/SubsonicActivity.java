@@ -314,6 +314,10 @@ public class SubsonicActivity extends AppCompatActivity implements OnItemSelecte
 	}
 
 	protected void createCustomActionBarView() {
+		// The action bar only drops the previous custom view while custom display is enabled, so a stale spinner would stay and show twice.
+		if(actionBarSpinner != null && actionBarSpinner.getParent() instanceof ViewGroup) {
+			((ViewGroup) actionBarSpinner.getParent()).removeView(actionBarSpinner);
+		}
 		actionBarSpinner = (Spinner) getLayoutInflater().inflate(R.layout.actionbar_spinner, null);
 		if((this instanceof SubsonicFragmentActivity || this instanceof SettingsActivity) && (Util.getPreferences(this).getBoolean(Constants.PREFERENCES_KEY_COLOR_ACTION_BAR, true) || ThemeUtil.getThemeRes(this) != R.style.Theme_DSub2000_Light_No_Color)) {
 			actionBarSpinner.setBackgroundDrawable(DrawableTint.getTintedDrawableFromColor(this, R.drawable.abc_spinner_mtrl_am_alpha, android.R.color.white));

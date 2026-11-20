@@ -51,6 +51,7 @@ changes in this fork.
 * User defined Cache Size, Network Timeout, and Buffer Length
 * Optionally reopen the last browsed directory (full navigation path) on launch
 * Playing-track marker in song lists updates immediately when the track changes
+* Folder path selector no longer shows twice after opening an album from search
 * Home screen widgets with playback controls and a star button
 * More transparent cover overlay buttons in the player
 
