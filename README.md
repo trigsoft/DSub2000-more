@@ -54,7 +54,7 @@ changes in this fork.
 * Folder path selector no longer shows twice after opening an album from search
 * Home screen widgets with playback controls and a star button
 * More transparent cover overlay buttons in the player
-* Play queue shown beside the cover in the Now Playing view on large landscape screens, with themed toolbar icons
+* Landscape Now Playing view: queue-only right pane, with cover, buttons, title and controls on the left, and themed toolbar icons
 
 ## Permissions
 
